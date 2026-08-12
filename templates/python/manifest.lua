@@ -1,6 +1,6 @@
 local M = {
   summary = "Simple Python program",
-  description = "Adopted from the Crystal Soop Python recipe with a hello-world entrypoint and justfile.",
+  description = "Creates a small Python program with a hello-world entrypoint and a starter justfile."
   variables = {{ name = "PROJECT_NAME", prompt = "Project directory?", default = "python-app", validate = function(v) return v:match("^[%w%-_%.]+$") ~= nil end }},
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME

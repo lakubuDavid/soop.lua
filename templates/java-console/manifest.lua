@@ -1,6 +1,6 @@
 local M = {
   summary = "Java console application",
-  description = "Adopted from the Crystal Soop Java console recipe using Maven's quickstart archetype.",
+  description = "Creates a Java console application from Maven's quickstart archetype and adds a starter justfile."
   variables = {{ name = "PROJECT_NAME", prompt = "Project directory?", default = "java-console", validate = function(v) return v:match("^[%w%-_%.]+$") ~= nil end }},
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME

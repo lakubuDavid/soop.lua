@@ -1,6 +1,6 @@
 local M = {
   summary = "Hono Bun Drizzle starter",
-  description = "Adopted from the Crystal Soop Hono recipe with Bun, Hono, Drizzle ORM, SQLite notes, component examples, and a justfile.",
+  description = "Creates a Bun and Hono starter with Drizzle ORM, SQLite examples, reusable components, and a justfile."
   variables = {{ name = "PROJECT_NAME", prompt = "Project directory?", default = "hono-app", validate = function(v) return v:match("^[%w%-_%.]+$") ~= nil end }},
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME

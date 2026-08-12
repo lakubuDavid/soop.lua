@@ -1,6 +1,6 @@
 local M = {
   summary = "Go app with air reload",
-  description = "Adopted from the Crystal Soop go-air recipe: initializes a Go module and an air hot-reload configuration.",
+  description = "Initializes a Go module and configures air for fast local hot-reload development.",
   variables = {{ name = "PROJECT_NAME", prompt = "Project directory?", default = "go-air-app", validate = function(v) return v:match("^[%w%-_%.]+$") ~= nil end }},
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME

@@ -1,7 +1,7 @@
-# Adopted Crystal Soop recipes
+# Adopted project recipes
 
-These templates were adopted from the existing Crystal-based Soop installation
-at `~/.config/soop/`.
+These templates were migrated from an existing YAML-based recipe collection
+and adapted to the Lua Soop manifest and context system.
 
 | Template | Summary |
 |---|---|

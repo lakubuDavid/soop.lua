@@ -1,6 +1,6 @@
 local M = {
   summary = "Go chi/sqlc SQLite backend",
-  description = "Adopted from the Crystal Soop go-backend recipe with chi, SQLite, SQLC, db schema/query examples, air, and a justfile.",
+  description = "Creates a small Go backend starter with chi routing, SQLite, SQLC configuration, schema and query examples, air, and a justfile.",
   variables = {{ name = "PROJECT_NAME", prompt = "Project directory?", default = "go-backend", validate = function(v) return v:match("^[%w%-_%.]+$") ~= nil end }},
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME

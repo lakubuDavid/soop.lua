@@ -1,6 +1,6 @@
 local M = {
   summary = "Echo project name",
-  description = "Adopted from the Crystal Soop echo recipe; creates a small Dockerfile template and echoes the project name.",
+  description = "Creates a small Dockerfile-based project and reports the generated project name."
   variables = {{ name = "PROJECT_NAME", prompt = "Project directory?", default = "echo-app", validate = function(v) return v:match("^[%w%-_%.]+$") ~= nil end }},
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME
