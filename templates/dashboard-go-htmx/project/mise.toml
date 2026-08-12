@@ -1,22 +1,6 @@
 [env]
 _.file = '.env'
 
-[tools]
-go = "1.26.5"
-node = "24.18.0"
-"go:github.com/a-h/templ/cmd/templ" = "0.3.1020"
-air = "1.65.3"
-goreman = "latest"
-dbmate = "latest"
-sqlc = "latest"
-usql = "latest"
-hurl = "latest"
-xh = "latest"
-"npm:unocss" = "66.7.5"
-"npm:typescript" = "7.0.2"
-"npm:@playwright/test" = "1.50.0"
-playwright = "latest"
-
 [monorepo]
 config_roots = ["apps/api", "apps/dashboard"]
 

@@ -44,6 +44,18 @@ local M = {
     local dest = ctx.vars.PROJECT_NAME
     local tpl = ctx.template_dir
 
+    local function must_exec(command)
+      if not ctx:exec(command) then
+        error("Command failed: " .. (type(command) == "table" and table.concat(command, " ") or command))
+      end
+    end
+
+    -- mise owns the generated project's external toolchain. The template
+    -- source mise.toml intentionally contains no [tools] block.
+    if not ctx:exec("command -v mise >/dev/null 2>&1") then
+      error("mise is required to scaffold dashboard-go-htmx")
+    end
+
     -- Derived variables available to every rendered file.
     ctx.vars.MODULE = ctx.vars.ORG .. "/" .. ctx.vars.PROJECT_NAME
 
@@ -51,9 +63,16 @@ local M = {
     ctx:scaffold_dir(tpl .. "/project", dest)
     ctx:scaffold_dir(tpl .. "/wiki", dest .. "/wiki")
 
-    ctx:exec({ "cd", dest, "&&", "git", "init" })
-    ctx:exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "db", "wiki" })
-    ctx:exec({ "cd", dest, "&&", "git", "commit", "-m", "'Initial scaffold'" })
+    must_exec({ "cd", dest, "&&", "mise", "use", "--yes",
+      "go@1", "node@24", "air@1", "goreman@0", "dbmate@2", "sqlc@1",
+      "usql@0", "hurl@6", "xh@0",
+      "go:github.com/a-h/templ/cmd/templ@0",
+      "npm:unocss@66", "npm:typescript@7" })
+    must_exec({ "cd", dest, "&&", "mise", "install" })
+
+    must_exec({ "cd", dest, "&&", "git", "init" })
+    must_exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "db", "wiki" })
+    must_exec({ "cd", dest, "&&", "git", "commit", "-m", "'Initial scaffold'" })
 
     print("\nNext steps:")
     print("  cd " .. dest)

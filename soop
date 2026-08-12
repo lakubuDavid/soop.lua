@@ -40,7 +40,12 @@ local ctx = {
       dry_run_message("exec " .. _cmd)
       return true
     end
-    return os.execute(_cmd)
+
+    local ok, how, code = os.execute(_cmd)
+    if how == "exit" then
+      return code == 0
+    end
+    return ok == true or ok == 0
   end,
 
   ---@param self Context

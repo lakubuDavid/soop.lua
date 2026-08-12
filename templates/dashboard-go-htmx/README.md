@@ -37,6 +37,21 @@ with a backslash to preserve it for the generated project, for example
 `\${DATABASE}` or `\@@NAME@@`. This keeps Go, TypeScript, CSS, and shell
 runtime interpolation safe.
 
+## Toolchain bootstrapping
+
+The template source `project/mise.toml` contains tasks, environment loading, and
+monorepo configuration only. It intentionally has no `[tools]` block.
+
+During scaffolding, the manifest:
+
+1. Verifies that `mise` is available.
+2. Runs `mise use TOOL@MAJOR` for the Go, Node, templ, database, SQL, API-test,
+   CSS, and TypeScript tools.
+3. Runs `mise install` inside the generated project.
+
+This keeps tool dependencies out of the template source while ensuring the
+scaffolded project has a major-version tool configuration.
+
 ## Generated project
 
 ```text
