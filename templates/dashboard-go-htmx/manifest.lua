@@ -52,7 +52,7 @@ local M = {
     ctx:scaffold_dir(tpl .. "/wiki", dest .. "/wiki")
 
     ctx:exec({ "cd", dest, "&&", "git", "init" })
-    ctx:exec({ "cd", dest, "&&", "git", "add", "." })
+    ctx:exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "db", "wiki" })
     ctx:exec({ "cd", dest, "&&", "git", "commit", "-m", "'Initial scaffold'" })
 
     print("\nNext steps:")
