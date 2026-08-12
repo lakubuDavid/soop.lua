@@ -1,0 +1,249 @@
+#!/usr/bin/env lua
+
+-- Resolve bundled dependencies relative to the launcher, not the caller's cwd.
+-- This allows `soop` to be run from inside a project directory.
+local SCRIPT_DIR = arg[0]:match("^(.*/)") or "./"
+package.path = SCRIPT_DIR .. "?.lua;" .. SCRIPT_DIR .. "?/init.lua;" .. package.path
+
+local argparse = require "libs.argparse"
+
+-- Directory containing templates. Prefer the explicit environment variable,
+-- otherwise use the current working directory's templates/ directory.
+local CWD = os.getenv("PWD") or "."
+local TEMPLATES_DIR = os.getenv("SOOP_TEMPLATES_DIR") or (CWD .. "/templates")
+
+local function dry_run_message(action)
+  print("[dry-run] " .. action)
+end
+
+---@class Context
+local ctx = {
+  dry_run = false,
+  template_dir = nil,
+  ---@param self Context
+  ---@param cmd string | table<string>
+  exec = function(self, cmd)
+    local _cmd = ""
+    if type(cmd) == "table" then
+      for _, part in ipairs(cmd) do
+        _cmd = _cmd .. " " .. part
+      end
+    else
+      _cmd = cmd
+    end
+
+    if self.dry_run then
+      dry_run_message("exec " .. _cmd)
+      return true
+    end
+    return os.execute(_cmd)
+  end,
+
+  ---@param self Context
+  ---@param path string
+  mkdir = function(self, path)
+    if self.dry_run then
+      dry_run_message("mkdir -p " .. path)
+      return true
+    end
+    return os.execute("mkdir -p " .. path)
+  end,
+
+  ---@param self Context
+  ---@param src string
+  ---@param dest string
+  copy_file = function(self, src, dest)
+    if self.dry_run then
+      dry_run_message("copy " .. src .. " -> " .. dest)
+      return true
+    end
+
+    local input = io.open(src, "rb")
+    if not input then error("Cannot open file: " .. src) end
+    local content = input:read("*all")
+    input:close()
+
+    local output = io.open(dest, "wb")
+    if not output then error("Cannot write file: " .. dest) end
+    output:write(content)
+    output:close()
+  end,
+
+  ---@param self Context
+  ---@param src string
+  ---@param dest string
+  copy_dir = function(self, src, dest)
+    return self:exec({ "cp", "-r", src, dest })
+  end,
+
+  ---@param self Context
+  ---@param src string
+  ---@param dest string
+  ---@param vars? table
+  copy_template = function(self, src, dest, vars)
+    local _vars = vars or self.vars
+
+    local input = io.open(src, "r")
+    if not input then error("Cannot open template: " .. src) end
+    local content = input:read("*all")
+    input:close()
+
+    local rendered = content:gsub("%$%{([%w_]+)%}", function(varname)
+      local val = _vars[varname]
+      if not val then
+        error("Template variable not found: " .. varname)
+      end
+      return tostring(val)
+    end)
+
+    if self.dry_run then
+      dry_run_message("render " .. src .. " -> " .. dest)
+      return true
+    end
+
+    local destdir = dest:match("^(.*/)[^/]*$")
+    if destdir then
+      self:mkdir(destdir)
+    end
+
+    local output = io.open(dest, "w")
+    if not output then error("Cannot write file: " .. dest) end
+    output:write(rendered)
+    output:close()
+  end,
+
+  vars = {}
+}
+
+---@class ManifestVariable
+---@field name string
+---@field prompt string
+---@field default string
+---@field options? string[]
+---@field validate? fun(val:string):boolean
+
+---@class Manifest
+---@field scaffold fun(ctx:Context):void
+---@field variables ManifestVariable[]
+
+---@param variables ManifestVariable[]
+local function collect_variables(variables)
+  local collected = {}
+
+  for _, var in ipairs(variables) do
+    local value
+
+    if var.options then
+      print("\n" .. var.prompt)
+      for i, opt in ipairs(var.options) do
+        print(string.format("  %d) %s", i, opt))
+      end
+
+      io.write("Select [1-" .. #var.options .. "]: ")
+      local choice = tonumber(io.read())
+
+      if choice and choice >= 1 and choice <= #var.options then
+        value = var.options[choice]
+      else
+        value = var.default
+      end
+    else
+      io.write(var.prompt .. " [" .. var.default .. "]: ")
+      value = io.read()
+      if value == "" then
+        value = var.default
+      end
+    end
+
+    if var.validate and not var.validate(value) then
+      io.stderr:write(string.format("[Error] Invalid value for %s\n", var.name))
+      os.exit(1)
+    end
+
+    collected[var.name] = value
+  end
+
+  return collected
+end
+
+function main()
+  ---@type Parser
+  local parser = argparse()
+      :name "soop"
+      :description "A simple project scaffolder"
+
+  ---@diagnostic disable-next-line: undefined-field
+  parser:command_target("command")
+
+  parser
+      :flag "--dry-run"
+
+  parser
+      :command "new n"
+      :argument "template-name"
+  parser
+      :command "create"
+  parser
+      :command "list ls"
+
+  ---@type {command: "new" | "create" | "list", template_name?: string, [string]: any}
+  local args = parser:parse()
+
+  if not args.command then
+    parser:print_help()
+    os.exit(0)
+  end
+
+  if args.command == "new" or args.command == "n" then
+    local template_name = args.template_name or args["template-name"]
+    if not template_name then
+      io.stderr:write("[Error] template-name is required\n")
+      os.exit(1)
+    end
+
+    local mpath = TEMPLATES_DIR .. "/" .. template_name .. "/manifest.lua"
+
+    local f = io.open(mpath, "r")
+    if not f then
+      io.stderr:write(string.format("[Error] Template not found: %s\n", template_name))
+      os.exit(1)
+    end
+    f:close()
+
+    ---@type Manifest
+    local manifest = dofile(mpath)
+
+    if not manifest.scaffold then
+      io.stderr:write("[Error] Manifest missing scaffold function\n")
+      os.exit(1)
+    end
+
+    -- Collect variables from manifest
+    if manifest.variables and #manifest.variables > 0 then
+      ctx.vars = collect_variables(manifest.variables)
+    end
+    ctx.dry_run = args.dry_run == true
+
+    ctx.template_dir = TEMPLATES_DIR .. "/" .. template_name
+
+    -- Execute scaffold
+    local ok, err = pcall(function()
+      manifest.scaffold(ctx)
+    end)
+
+    if ok then
+      print("\n✓ Project scaffolded successfully!")
+    else
+      io.stderr:write(string.format("\n[Error] Scaffold failed: %s\n", err))
+      os.exit(1)
+    end
+  elseif args.command == "list" or args.command == "ls" then
+    -- List available templates
+    os.execute("ls -la " .. TEMPLATES_DIR)
+  elseif args.command == "create" then
+    -- Create a new template structure
+    io.stderr:write("[TODO] Create command not implemented\n")
+  end
+end
+
+main()
