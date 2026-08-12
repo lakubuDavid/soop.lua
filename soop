@@ -11,6 +11,11 @@ local argparse = require "libs.argparse"
 -- otherwise use the current working directory's templates/ directory.
 local CWD = os.getenv("PWD") or "."
 local TEMPLATES_DIR = os.getenv("SOOP_TEMPLATES_DIR") or (CWD .. "/templates")
+local _env_no_color = os.getenv("NO_COLOR")
+local NO_COLOR =
+    _env_no_color ~= nil
+    and (_env_no_color == 1 or _env_no_color == "1")
+    or false
 
 local function dry_run_message(action)
   print("[dry-run] " .. action)
@@ -21,7 +26,7 @@ local function shell_quote(s)
 end
 
 local function color(code, message)
-  if os.getenv("NO_COLOR") then return message end
+  if NO_COLOR then return message end
   return string.char(27) .. "[" .. code .. "m" .. message .. string.char(27) .. "[0m"
 end
 
@@ -41,6 +46,8 @@ local function control(kind, reason, code)
   error({ __soop_control = true, kind = kind, reason = reason or kind, code = code or 1 }, 0)
 end
 
+local collect_variables
+
 ---@class Context
 ---@field prompt fun(self:Context, message:string, default?:string):string
 ---@field info fun(self:Context, message:string):void
@@ -50,6 +57,7 @@ end
 ---@field stop fun(self:Context, reason?:string):never
 ---@field exit fun(self:Context, code?:number, reason?:string):never
 ---@field rollback fun(self:Context, reason?:string):never
+---@field run_child fun(self:Context, manifest_path:string):void
 local ctx = {
   dry_run = false,
   template_dir = nil,
@@ -110,6 +118,96 @@ local ctx = {
   stop = function(self, reason) control("stop", reason, 0) end,
   exit = function(self, code, reason) control("exit", reason, code or 1) end,
   rollback = function(self, reason) control("rollback", reason, 1) end,
+
+  run_child = function(self, manifest_path)
+    if self.is_child or self.depth >= 1 then
+      error("Nested manifests are limited to one child level", 0)
+    end
+
+    local child_path = self.template_dir .. "/" .. manifest_path
+    local file = io.open(child_path, "r")
+    if not file then error("Child manifest not found: " .. manifest_path, 0) end
+    file:close()
+
+    local manifest = dofile(child_path)
+    if type(manifest) ~= "table" or type(manifest.scaffold) ~= "function" then
+      error("Child manifest missing scaffold function: " .. manifest_path, 0)
+    end
+
+    local child_dir = child_path:match("^(.+)/[^/]+$") or self.template_dir
+    local child_vars = {}
+    local definitions = manifest.variables or {}
+    for _, variable in ipairs(definitions) do
+      local value
+      if variable.inherit then
+        value = self.vars[variable.name]
+      elseif variable.options then
+        if self.dry_run then
+          dry_run_message("child prompt " .. variable.name .. " [default=" .. tostring(variable.default or "") .. "]")
+          value = variable.default
+        else
+          print("\n" .. variable.prompt)
+          for i, option in ipairs(variable.options) do
+            print(string.format("  %d) %s", i, option))
+          end
+          io.write("Select [1-" .. #variable.options .. "]: ")
+          local choice = tonumber(io.read())
+          if choice and choice >= 1 and choice <= #variable.options then
+            value = variable.options[choice]
+          else
+            value = variable.default
+          end
+        end
+      elseif variable.prompt then
+        if self.dry_run then
+          dry_run_message("child prompt " .. variable.name .. " [default=" .. tostring(variable.default or "") .. "]")
+          value = variable.default
+        else
+          io.write(variable.prompt .. " [" .. (variable.default or "") .. "]: ")
+          value = io.read()
+          if value == nil or value == "" then value = variable.default end
+        end
+      else
+        value = variable.default
+      end
+
+      if variable.validate and value ~= nil and not variable.validate(value) then
+        error("Invalid child value for " .. variable.name, 0)
+      end
+      child_vars[variable.name] = value
+    end
+
+    local parent_view = { depth = self.depth or 0, is_child = self.is_child == true, vars = {} }
+    for name, value in pairs(self.vars) do parent_view.vars[name] = value end
+
+    local child = setmetatable({
+      dry_run = self.dry_run,
+      template_dir = child_dir,
+      destination = self.destination,
+      vars = child_vars,
+      is_child = true,
+      depth = (self.depth or 0) + 1,
+      parent = parent_view,
+    }, { __index = self })
+
+    child.prompt = function()
+      error("Child manifests must declare prompted variables in manifest.variables", 0)
+    end
+    child.run_child = function()
+      error("Nested manifests are limited to one child level", 0)
+    end
+
+    local ok, err = pcall(function() manifest.scaffold(child) end)
+    if not ok then
+      if manifest.cleanup then
+        local cleanup_ok, cleanup_err = pcall(function() manifest.cleanup(child) end)
+        if not cleanup_ok then
+          log_error("Child cleanup failed: " .. tostring(cleanup_err))
+        end
+      end
+      error(err, 0)
+    end
+  end,
 
   ---@param self Context
   ---@param src string
@@ -257,7 +355,11 @@ local ctx = {
     output:close()
   end,
 
-  vars = {}
+  vars = {},
+  is_child = false,
+  depth = 0,
+  parent = nil,
+  destination = nil
 }
 
 ---@class ManifestVariable
@@ -274,7 +376,7 @@ local ctx = {
 ---@field variables ManifestVariable[]
 
 ---@param variables ManifestVariable[]
-local function collect_variables(variables)
+collect_variables = function(variables)
   local collected = {}
 
   for _, var in ipairs(variables) do
@@ -324,6 +426,8 @@ function main()
 
   parser
       :flag "--dry-run"
+  parser
+      :flag "--no-color"
 
   parser
       :command "new n"
@@ -370,8 +474,13 @@ function main()
       ctx.vars = collect_variables(manifest.variables)
     end
     ctx.dry_run = args.dry_run == true
+    NO_COLOR = args.no_color
 
     ctx.template_dir = TEMPLATES_DIR .. "/" .. template_name
+    ctx.destination = ctx.vars.PROJECT_NAME
+    ctx.is_child = false
+    ctx.depth = 0
+    ctx.parent = nil
 
     -- Execute scaffold. Cleanup is best-effort and only runs after the
     -- scaffold has started, so a manifest can remove partial output.
