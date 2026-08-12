@@ -1,0 +1,36 @@
+SOOP_TEMPLATES_PATH := "${HOME}/.config/soop/templates/hono-ts/_templates"
+SRC_DIR := "./src"
+@default:
+    just --list
+
+@dev:
+    bun dev
+
+add component component_name:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source="{{SOOP_TEMPLATES_PATH}}/{{component}}"
+    extension=""
+
+    if [ -f "$source.ts" ]; then
+        extension="ts"
+    elif [ -f "$source.js" ]; then
+        extension="js"
+    elif [ -f "$source.jsx" ]; then
+        extension="jsx"
+    else
+        echo $source.$extension
+        echo "Error: Component {{component}} doesn't exists."
+        exit 1
+    fi
+
+    target="{{SRC_DIR}}/{{component}}s/{{component_name}}.$extension"
+    # Check if file already exists
+    if [ -f "$target" ]; then
+        echo "Error: File $target already exists."
+        exit 1
+    fi
+    
+
+    mkdir -p "$(dirname "$target")"
+    cat "$source.$extension"| sed -e 's/%NAME%/{{component_name}}/g' > "$target"

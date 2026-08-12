@@ -1,0 +1,11 @@
+local M = {
+  summary = "C# console application",
+  description = "Adopted from the Crystal Soop C# console recipe using dotnet new console and a justfile.",
+  variables = {{ name = "PROJECT_NAME", prompt = "Project directory?", default = "csharp-console", validate = function(v) return v:match("^[%w%-_%.]+$") ~= nil end }},
+  scaffold = function(ctx)
+    local dest = ctx.vars.PROJECT_NAME
+    if not ctx:exec({ "dotnet", "new", "console", "-o", dest, "--use-program-main" }) then error("dotnet setup failed") end
+    ctx:scaffold_dir(ctx.template_dir .. "/project", dest)
+  end
+}
+return M

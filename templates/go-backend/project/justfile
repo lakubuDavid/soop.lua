@@ -1,0 +1,11 @@
+@default:
+    just --list
+
+@watch:
+    air .
+
+@run:
+    go run .
+
+@build:
+    go build -o {name}
