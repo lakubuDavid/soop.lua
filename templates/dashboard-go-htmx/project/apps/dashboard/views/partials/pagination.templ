@@ -1,0 +1,9 @@
+package partials
+
+import "fmt"
+
+templ Pagination(page int, pages int) {
+	if pages > 1 {
+		<nav class="mt-4 flex gap-2" aria-label="Pagination"><span class="text-sm text-[var(--color-muted)]">Page { fmt.Sprint(page) } of { fmt.Sprint(pages) }</span></nav>
+	}
+}

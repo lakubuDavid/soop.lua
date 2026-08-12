@@ -1,0 +1,17 @@
+package components
+
+import "@@MODULE@@/packages/shared/types"
+
+type SidebarProps struct { User *types.User }
+
+templ Sidebar(props SidebarProps) {
+	<aside class="hidden w-64 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] md:flex">
+		<div class="border-b border-[var(--color-border)] p-4"><a class="text-lg font-bold text-[var(--color-primary)]" href="/dashboard">@@PROJECT_NAME@@</a></div>
+		<nav class="flex-1 space-y-1 p-3">
+			<a class="sidebar-link" href="/dashboard/overview"><span class="i-tabler-layout-dashboard"></span>Overview</a>
+			<a class="sidebar-link" href="/dashboard/users"><span class="i-tabler-users"></span>Users</a>
+			<a class="sidebar-link" href="/dashboard/settings"><span class="i-tabler-settings"></span>Settings</a>
+		</nav>
+		<div class="border-t border-[var(--color-border)] p-4 text-xs text-[var(--color-muted)]">{ props.User.Email }</div>
+	</aside>
+}

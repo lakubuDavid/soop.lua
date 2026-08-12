@@ -1,0 +1,13 @@
+package partials
+
+import "@@MODULE@@/packages/shared/types"
+
+templ UserRows(users []types.User) {
+	if len(users) == 0 {
+		<tr><td class="empty-state" colspan="4">No users found.</td></tr>
+	} else {
+		for _, user := range users {
+			<tr class="row-hover"><td class="td-base">{ user.DisplayName }</td><td class="td-base">{ user.Email }</td><td class="td-base">{ user.Status }</td><td class="td-base">{ user.CreatedAt.Format("2006-01-02") }</td></tr>
+		}
+	}
+}

@@ -1,0 +1,22 @@
+package dashboard
+
+import (
+	"@@MODULE@@/apps/dashboard/common"
+	"@@MODULE@@/apps/dashboard/components"
+	"@@MODULE@@/apps/dashboard/views"
+	"@@MODULE@@/apps/dashboard/views/partials"
+)
+
+type SettingsProps struct { User *common.User }
+
+templ SettingsPage(props SettingsProps) {
+	@views.DashboardLayout(views.DashboardLayoutProps{Title: "Settings", User: props.User}) {
+		@partials.PageTitle("Settings", "Configure this platform.")
+		@components.Card("Profile") {
+			<form class="max-w-lg space-y-4" method="post" action="/dashboard/settings/profile">
+				<p class="text-sm text-[var(--color-muted)]">{ props.User.Email }</p>
+				<button class="btn-primary" type="submit">Save changes</button>
+			</form>
+		}
+	}
+}

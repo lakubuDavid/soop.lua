@@ -1,0 +1,13 @@
+package components
+
+templ Button(label string, href string) {
+	if href != "" {
+		<a class="btn-primary" href={ templ.SafeURL(href) }>{ label }</a>
+	} else {
+		<button class="btn-primary" type="submit">{ label }</button>
+	}
+}
+
+templ OutlineButton(label string, href string) {
+	<a class="btn-outline" href={ templ.SafeURL(href) }>{ label }</a>
+}

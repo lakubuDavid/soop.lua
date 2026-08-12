@@ -1,0 +1,24 @@
+package dashboard
+
+import (
+	"@@MODULE@@/apps/dashboard/common"
+	"@@MODULE@@/apps/dashboard/components"
+	"@@MODULE@@/apps/dashboard/views"
+	"@@MODULE@@/apps/dashboard/views/partials"
+)
+
+type UsersProps struct { User *common.User }
+
+templ UsersPage(props UsersProps) {
+	@views.DashboardLayout(views.DashboardLayoutProps{Title: "Users", User: props.User}) {
+		@partials.PageTitle("Users", "Manage people who can access this platform.") {
+			@components.Button("Invite user", "#")
+		}
+		@components.Table(components.TableProps{
+			Columns: []components.TableColumn{
+				{Label: "Name"}, {Label: "Email"}, {Label: "Status"}, {Label: "Created"},
+			},
+			Target: "user-rows", Endpoint: "/partials/users",
+		})
+	}
+}

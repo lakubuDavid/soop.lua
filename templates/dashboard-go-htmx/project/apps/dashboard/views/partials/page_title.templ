@@ -1,0 +1,5 @@
+package partials
+
+templ PageTitle(title string, description string) {
+	<div class="mb-6 flex flex-wrap items-start justify-between gap-3"><div><h1 class="page-title">{ title }</h1><p class="mt-1 text-sm text-[var(--color-muted)]">{ description }</p></div>{ children... }</div>
+}

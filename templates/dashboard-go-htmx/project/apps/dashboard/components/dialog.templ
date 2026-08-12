@@ -1,0 +1,13 @@
+package components
+
+templ Dialog(id string, title string) {
+	<dialog id={ id } class="dialog" x-data x-on:open-dialog.window="$event.detail === 'dialog' && $el.showModal()">
+		<div class="p-6">
+			<div class="flex items-center justify-between">
+				<h2 class="text-lg font-semibold">{ title }</h2>
+				<button class="icon-btn" type="button" x-on:click="$el.closest('dialog').close()" aria-label="Close"><span class="i-tabler-x"></span></button>
+			</div>
+			{ children... }
+		</div>
+	</dialog>
+}

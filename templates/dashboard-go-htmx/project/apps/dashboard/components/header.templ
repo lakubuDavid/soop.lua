@@ -1,0 +1,12 @@
+package components
+
+import "@@MODULE@@/packages/shared/types"
+
+type HeaderProps struct { User *types.User }
+
+templ Header(props HeaderProps) {
+	<header class="flex h-16 items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 md:px-6">
+		<button class="icon-btn md:hidden" type="button" x-data x-on:click="$dispatch('toggle-sidebar')" aria-label="Open navigation"><span class="i-tabler-menu text-xl"></span></button>
+		<div class="ml-auto flex items-center gap-3"><span class="hidden text-sm text-[var(--color-muted)] sm:block">{ props.User.DisplayName }</span><form method="post" action="/logout"><button class="icon-btn" type="submit" aria-label="Sign out"><span class="i-tabler-logout"></span></button></form></div>
+	</header>
+}

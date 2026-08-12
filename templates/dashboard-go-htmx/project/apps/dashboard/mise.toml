@@ -7,7 +7,7 @@ run = "npm install && go mod tidy"
 
 [tasks.generate]
 description = "Generate templ, TypeScript, and UnoCSS"
-depends = ["generate:templ", "generate:ts", "generate:css"]
+depends = ["generate:templ", "generate:ts", "generate:css", "generate:vendor"]
 
 [tasks."generate:templ"]
 run = "templ generate views components"
@@ -17,6 +17,9 @@ run = "npm run build:ts"
 
 [tasks."generate:css"]
 run = "npx unocss 'views/**/*.templ' 'components/**/*.templ' -o static/uno.css"
+
+[tasks."generate:vendor"]
+run = "mkdir -p static/js && cp node_modules/htmx.org/dist/htmx.min.js static/js/htmx.min.js && cp node_modules/alpinejs/dist/cdn.min.js static/js/alpine.min.js"
 
 [tasks.dev]
 description = "Run dashboard with hot reload"

@@ -1,0 +1,11 @@
+package partials
+
+type Breadcrumb struct { Label string; Href string }
+
+templ Breadcrumbs(items []Breadcrumb) {
+	<nav class="mb-3 flex gap-2 text-xs text-[var(--color-muted)]" aria-label="Breadcrumb">
+		for _, item := range items {
+			<a class="hover:text-[var(--color-primary)]" href={ templ.SafeURL(item.Href) }>{ item.Label }</a>
+		}
+	</nav>
+}

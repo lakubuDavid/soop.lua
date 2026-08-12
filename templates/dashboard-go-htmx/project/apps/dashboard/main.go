@@ -9,14 +9,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 	"@@MODULE@@/apps/dashboard/common"
 	"@@MODULE@@/apps/dashboard/handlers"
 	"@@MODULE@@/apps/dashboard/middlewares"
-	"@@MODULE@@/apps/dashboard/views"
 )
 
 func main() {
@@ -53,5 +51,4 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = server.Shutdown(ctx)
-	_ = templ.NopComponent
 }

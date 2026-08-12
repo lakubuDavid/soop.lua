@@ -1,0 +1,9 @@
+package components
+
+templ Card(title string) {
+	<section class="card"><h2 class="mb-3 font-semibold text-[var(--color-primary)]">{ title }</h2>{ children... }</section>
+}
+
+templ StatCard(label string, value string, icon string) {
+	<div class="card flex items-start justify-between"><div><p class="stat-label">{ label }</p><p class="stat-value mt-1">{ value }</p></div><span class={ "text-2xl text-[var(--color-accent)]", "i-tabler-" + icon }></span></div>
+}

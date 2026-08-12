@@ -1,0 +1,9 @@
+package partials
+
+import "fmt"
+
+type StatsProps struct { Total int; Active int; Pending int }
+
+templ Stats(props StatsProps) {
+	<div id="stats-cards" class="grid grid-cols-1 gap-4 md:grid-cols-3"><div class="card"><p class="stat-label">Total records</p><p class="stat-value">{ fmt.Sprint(props.Total) }</p></div><div class="card"><p class="stat-label">Active</p><p class="stat-value">{ fmt.Sprint(props.Active) }</p></div><div class="card"><p class="stat-label">Pending</p><p class="stat-value">{ fmt.Sprint(props.Pending) }</p></div></div>
+}

@@ -1,0 +1,18 @@
+package dashboard
+
+import (
+	"@@MODULE@@/apps/dashboard/common"
+	"@@MODULE@@/apps/dashboard/views"
+	"@@MODULE@@/apps/dashboard/views/partials"
+)
+
+type OverviewProps struct { User *common.User }
+
+templ OverviewPage(props OverviewProps) {
+	@views.DashboardLayout(views.DashboardLayoutProps{Title: "Overview", User: props.User}) { @OverviewContent(props) }
+}
+
+templ OverviewContent(props OverviewProps) {
+	@partials.PageTitle("Overview", "A neutral starting point for your platform.")
+	<div class="space-y-6"><div id="stats-cards" hx-get="/partials/stats/overview" hx-trigger="load" hx-swap="outerHTML" hx-indicator="#loading-spinner"><div class="grid grid-cols-1 gap-4 md:grid-cols-3"><div class="card animate-pulse">Loading...</div><div class="card animate-pulse">Loading...</div><div class="card animate-pulse">Loading...</div></div></div><section class="card"><h2 class="font-semibold">Welcome, { props.User.DisplayName }</h2><p class="mt-2 text-sm text-[var(--color-muted)]">Add your first domain module under the dashboard views and API.</p></section></div>
+}

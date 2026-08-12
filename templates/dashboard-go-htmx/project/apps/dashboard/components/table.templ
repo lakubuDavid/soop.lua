@@ -1,0 +1,25 @@
+package components
+
+type TableColumn struct { Label string }
+type TableProps struct { Columns []TableColumn; Target string; Endpoint string }
+
+templ Table(props TableProps) {
+	<div class="table-shell" x-data="tableSearch()">
+		<div class="border-b border-[var(--color-border)] p-3"><input class="input-base max-w-sm" type="search" placeholder="Search..." x-model="query"/></div>
+		<table class="w-full">
+			<thead>
+				<tr class="border-b border-[var(--color-border)] bg-[var(--color-background)]">
+					for _, column := range props.Columns {
+						<th class="th-base">{ column.Label }</th>
+					}
+				</tr>
+			</thead>
+			<tbody id={ props.Target } if props.Endpoint != "" {
+				hx-get={ props.Endpoint }
+				hx-trigger="load"
+				hx-target="this"
+				hx-swap="innerHTML"
+			}>{ children... }</tbody>
+		</table>
+	</div>
+}
