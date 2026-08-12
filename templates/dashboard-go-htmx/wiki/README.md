@@ -24,4 +24,4 @@ Read these documents before changing the template code or manifest:
 
 ## Status
 
-This documentation is the design contract for the template. Template code, manifest variables, and generated project structure should be implemented only after these documents are reviewed and accepted.
+This documentation is the design contract for the template. Template code and manifest variables should follow these documents. Optional modules may be implemented as one-level child manifests with explicit variable inheritance.

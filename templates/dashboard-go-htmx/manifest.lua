@@ -56,9 +56,10 @@ local M = {
     ctx:mkdir(dest)
     ctx:scaffold_dir(tpl .. "/project", dest)
     ctx:scaffold_dir(tpl .. "/wiki", dest .. "/wiki")
+    ctx:run_child("modules/auth/manifest.lua")
 
     must_exec({ "cd", dest, "&&", "git", "init" })
-    must_exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "db", "wiki" })
+    must_exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "wiki" })
     must_exec({ "cd", dest, "&&", "git", "commit", "-m", "'Initial scaffold'" })
 
     if ctx.dry_run then

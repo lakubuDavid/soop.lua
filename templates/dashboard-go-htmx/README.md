@@ -60,6 +60,7 @@ unnecessary installation during every scaffold.
 │   └── dashboard/    templ + htmx + Alpine + UnoCSS + TS
 ├── packages/shared/  shared Go types and API client
 ├── db/               per-dialect dbmate migrations + sqlc
+├── modules/          optional child manifests (auth is included)
 ├── wiki/             design docs copied from the template
 ├── go.work
 ├── mise.toml         monorepo tasks + external tools
