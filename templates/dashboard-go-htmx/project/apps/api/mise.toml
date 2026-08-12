@@ -1,0 +1,26 @@
+[env]
+_.file = '../../.env'
+
+[tasks.setup]
+description = "Download API dependencies"
+run = "go mod tidy"
+
+[tasks.generate]
+description = "Generate SQLC code for the selected database"
+run = "sqlc generate -f db/\${DB_DRIVER}/sqlc.yaml"
+
+[tasks.dev]
+description = "Run API with hot reload"
+run = "air"
+
+[tasks.build]
+description = "Build API"
+run = "go build -o ./bin/api ."
+
+[tasks.test]
+description = "Run API unit tests"
+run = "go test ./..."
+
+[tasks."test:http"]
+description = "Run Hurl API scenarios"
+run = "hurl --test --variable api_url=http://localhost:8080 tests/http/*.hurl"
