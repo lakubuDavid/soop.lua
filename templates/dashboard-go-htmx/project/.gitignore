@@ -6,6 +6,6 @@ tmp/
 *.log
 test-results/
 playwright-report/
-data/
+/data/
 *.db
 *.sqlite
