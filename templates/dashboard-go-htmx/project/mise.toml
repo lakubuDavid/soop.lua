@@ -6,7 +6,7 @@ _.file = '.env'
 go = "1"
 node = "24"
 air = "1"
-goreman = "0"
+"aqua:mattn/goreman" = "0"
 dbmate = "2"
 sqlc = "1"
 usql = "0"
@@ -49,20 +49,20 @@ run = "npm --prefix apps/dashboard run test:e2e"
 
 [tasks."db:up"]
 description = "Apply migrations for DB_DRIVER"
-run = "dbmate --migrations-dir db/\${DATABASE}/migrations --env DATABASE_URL up"
+run = "dbmate --migrations-dir db/$DATABASE/migrations --env DATABASE_URL up"
 
 [tasks."db:down"]
 description = "Roll back the last migration"
-run = "dbmate --migrations-dir db/\${DATABASE}/migrations --env DATABASE_URL down"
+run = "dbmate --migrations-dir db/$DATABASE/migrations --env DATABASE_URL down"
 
 [tasks."db:status"]
 description = "Show migration status"
-run = "dbmate --migrations-dir db/\${DATABASE}/migrations --env DATABASE_URL status"
+run = "dbmate --migrations-dir db/$DATABASE/migrations --env DATABASE_URL status"
 
 [tasks."db:new"]
 description = "Create a new migration (usage: mise run db:new name=add_x)"
-run = "dbmate --migrations-dir db/\${DATABASE}/migrations new $name"
+run = "dbmate --migrations-dir db/$DATABASE/migrations new $name"
 
 [tasks."db:cli"]
 description = "Open the database with usql"
-run = "usql \${DATABASE_URL}"
+run = "usql $DATABASE_URL"

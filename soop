@@ -27,7 +27,8 @@ local ctx = {
   template_dir = nil,
   ---@param self Context
   ---@param cmd string | table<string>
-  exec = function(self, cmd)
+  ---@param opts? {run_in_dry_run?:boolean}
+  exec = function(self, cmd, opts)
     local _cmd = ""
     if type(cmd) == "table" then
       for _, part in ipairs(cmd) do
@@ -37,7 +38,7 @@ local ctx = {
       _cmd = cmd
     end
 
-    if self.dry_run then
+    if self.dry_run and not (opts and opts.run_in_dry_run) then
       dry_run_message("exec " .. _cmd)
       return true
     end
@@ -229,6 +230,7 @@ local ctx = {
 ---@field default string
 ---@field options? string[]
 ---@field validate? fun(val:string):boolean
+---@field inherits? boolean
 
 ---@class Manifest
 ---@field scaffold fun(ctx:Context):void
