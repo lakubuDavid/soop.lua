@@ -43,8 +43,9 @@ local function list_templates()
       file:close()
       -- Read only the literal description field. Listing must not execute a
       -- manifest, since manifests are executable Lua programs.
+      local summary = source:match("summary%s*=%s*['\"]([^'\"]*)['\"]")
       local description = source:match("description%s*=%s*['\"]([^'\"]*)['\"]")
-      rows[#rows + 1] = { name = name, description = description or "(no description)" }
+      rows[#rows + 1] = { name = name, summary = summary or "(no summary)", description = description or "(no description)" }
     end
   end
   pipe:close()
@@ -59,11 +60,32 @@ local function list_templates()
     if #row.name > name_width then name_width = #row.name end
   end
 
-  print(string.format("%-" .. name_width .. "s  %s", "NAME", "DESCRIPTION"))
+  print(string.format("%-" .. name_width .. "s  %s", "NAME", "SUMMARY"))
   print(string.rep("-", name_width) .. "  " .. string.rep("-", 48))
   for _, row in ipairs(rows) do
-    print(string.format("%-" .. name_width .. "s  %s", row.name, row.description))
+    print(string.format("%-" .. name_width .. "s  %s", row.name, row.summary))
   end
+end
+
+local function template_details(template_name)
+  local path = TEMPLATES_DIR .. "/" .. template_name
+  local manifest_path = path .. "/manifest.lua"
+  local file = io.open(manifest_path, "r")
+  if not file then
+    log_error("Template not found: " .. template_name)
+    return false
+  end
+
+  local source = file:read("*all")
+  file:close()
+  local summary = source:match("summary%s*=%s*['\"]([^'\"]*)['\"]") or "(no summary)"
+  local description = source:match("description%s*=%s*['\"]([^'\"]*)['\"]") or "(no description)"
+
+  print("Name:        " .. template_name)
+  print("Summary:     " .. summary)
+  print("Description: " .. description)
+  print("Path:        " .. path)
+  return true
 end
 
 local function color(code, message)
@@ -477,8 +499,11 @@ function main()
       :command "create"
   parser
       :command "list ls"
+  parser
+      :command "details d"
+      :argument "template-name"
 
-  ---@type {command: "new" | "create" | "list", template_name?: string, [string]: any}
+  ---@type {command: "new" | "create" | "list" | "details", template_name?: string, [string]: any}
   local args = parser:parse()
 
   if not args.command then
@@ -562,6 +587,13 @@ function main()
     end
   elseif args.command == "list" or args.command == "ls" then
     list_templates()
+  elseif args.command == "details" or args.command == "d" then
+    local template_name = args.template_name or args["template-name"]
+    if not template_name then
+      log_error("template-name is required")
+      os.exit(1)
+    end
+    if not template_details(template_name) then os.exit(1) end
   elseif args.command == "create" then
     -- Create a new template structure
     io.stderr:write("[TODO] Create command not implemented\n")

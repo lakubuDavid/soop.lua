@@ -121,8 +121,10 @@ Available context methods:
 ```text
 soop new <template-name>    Scaffold a project
 soop n <template-name>      Alias for new
-soop list                   List templates
+soop list                   List template names and short summaries
 soop ls                     Alias for list
+soop details <template-name> Show summary and full description
+soop d <template-name>      Alias for details
 soop --help                 Show help
 ```
 

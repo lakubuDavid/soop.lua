@@ -11,6 +11,8 @@ for interaction patterns but is not the template's domain.
 ## Usage
 
 ```sh
+SOOP_TEMPLATES_DIR="$(pwd)/templates" ./soop list
+SOOP_TEMPLATES_DIR="$(pwd)/templates" ./soop details dashboard-go-htmx
 SOOP_TEMPLATES_DIR="$(pwd)/templates" ./soop new dashboard-go-htmx
 SOOP_TEMPLATES_DIR="$(pwd)/templates" ./soop --dry-run new dashboard-go-htmx
 ```

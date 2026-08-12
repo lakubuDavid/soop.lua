@@ -9,7 +9,8 @@
 ---
 ---@type Manifest
 local M = {
-  description = "Domain-neutral Go + HTMX dashboard monorepo",
+  summary = "Generic Go dashboard starter",
+  description = "Domain-neutral Go + HTMX dashboard monorepo with chi, templ, HTMX, Alpine, TypeScript, UnoCSS, mise, dbmate, SQLC, and multi-database support",
   variables = {
     {
       name = "PROJECT_NAME",

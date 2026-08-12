@@ -1,7 +1,8 @@
 -- Example template project.
 ---@type Manifest
 local M = {
-  description = "Small example project template",
+  summary = "Small example",
+  description = "A small example project template for testing variables, rendering, commands, and dry-run behavior.",
   variables = {
     {
       name = "PROJECT_NAME",

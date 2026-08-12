@@ -8,21 +8,25 @@ trap 'rm -rf "$TMP"' EXIT
 
 mkdir -p "$TMP/templates/short" "$TMP/templates/long-name"
 cat > "$TMP/templates/short/manifest.lua" <<'EOF'
-return { description = "Short template" }
+return { summary = "Short", description = "Short template details" }
 EOF
 cat > "$TMP/templates/long-name/manifest.lua" <<'EOF'
-return { description = "A longer template description" }
+return { summary = "Long", description = "A longer template description" }
 EOF
 
 output=$(SOOP_TEMPLATES_DIR="$TMP/templates" "$SOOP" list)
 
 printf '%s\n' "$output" | grep -F 'NAME' >/dev/null
-printf '%s\n' "$output" | grep -F 'Short template' >/dev/null
-printf '%s\n' "$output" | grep -F 'A longer template description' >/dev/null
+printf '%s\n' "$output" | grep -F 'Short' >/dev/null
+printf '%s\n' "$output" | grep -F 'Long' >/dev/null
 
 short_line=$(printf '%s\n' "$output" | grep '^short ')
 long_line=$(printf '%s\n' "$output" | grep '^long-name ')
-[ "$short_line" = "short      Short template" ]
-[ "$long_line" = "long-name  A longer template description" ]
+[ "$short_line" = "short      Short" ]
+[ "$long_line" = "long-name  Long" ]
 
-echo 'ok - list displays aligned template names and descriptions'
+details=$(SOOP_TEMPLATES_DIR="$TMP/templates" "$SOOP" details long-name)
+printf '%s\n' "$details" | grep -F 'Summary:     Long' >/dev/null
+printf '%s\n' "$details" | grep -F 'Description: A longer template description' >/dev/null
+
+echo 'ok - list displays aligned summaries and details shows descriptions'
