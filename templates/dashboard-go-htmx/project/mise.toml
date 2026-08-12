@@ -1,6 +1,21 @@
 [env]
 _.file = '.env'
 
+# Major versions keep the scaffold stable without over-pinning patch releases.
+[tools]
+go = "1"
+node = "24"
+air = "1"
+goreman = "0"
+dbmate = "2"
+sqlc = "1"
+usql = "0"
+hurl = "6"
+xh = "0"
+"go:github.com/a-h/templ/cmd/templ" = "0"
+"npm:unocss" = "66"
+"npm:typescript" = "7"
+
 [monorepo]
 config_roots = ["apps/api", "apps/dashboard"]
 

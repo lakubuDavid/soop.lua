@@ -39,18 +39,17 @@ runtime interpolation safe.
 
 ## Toolchain bootstrapping
 
-The template source `project/mise.toml` contains tasks, environment loading, and
-monorepo configuration only. It intentionally has no `[tools]` block.
+The template source `project/mise.toml` includes a `[tools]` block using major
+versions only. During scaffolding, the manifest asks whether tools should be
+installed immediately. If accepted and `mise` is available, it runs:
 
-During scaffolding, the manifest:
+```sh
+mise install
+```
 
-1. Verifies that `mise` is available.
-2. Runs `mise use TOOL@MAJOR` for the Go, Node, templ, database, SQL, API-test,
-   CSS, and TypeScript tools.
-3. Runs `mise install` inside the generated project.
-
-This keeps tool dependencies out of the template source while ensuring the
-scaffolded project has a major-version tool configuration.
+If declined, or if `mise` is unavailable, the generated instructions show how
+to install it later. This keeps the template easy to inspect while avoiding
+unnecessary installation during every scaffold.
 
 ## Generated project
 

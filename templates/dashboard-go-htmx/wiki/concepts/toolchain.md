@@ -26,7 +26,7 @@ A dashboard project spans Go, templ, Node, UnoCSS, TypeScript, database tooling,
 
 ## How we use it
 
-The template source `mise.toml` owns environment loading, monorepo configuration, and tasks, but intentionally does not contain a `[tools]` block. The manifest first checks for `mise`, then runs `mise use TOOL@MAJOR` and `mise install` inside the generated project. This creates the generated project's tool configuration without hardcoding tool versions in the source template. App-level `mise.toml` files may add local tasks but must not silently select incompatible tool versions.
+The template source `mise.toml` owns environment loading, monorepo configuration, tasks, and a `[tools]` block containing major versions only. The manifest prompts whether tools should be installed immediately. When accepted and `mise` is available, it runs `mise install`; otherwise it prints instructions for later installation. App-level `mise.toml` files may add local tasks but must not silently select incompatible tool versions.
 
 Use task dependencies for generation:
 

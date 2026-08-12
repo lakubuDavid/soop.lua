@@ -50,12 +50,6 @@ local M = {
       end
     end
 
-    -- mise owns the generated project's external toolchain. The template
-    -- source mise.toml intentionally contains no [tools] block.
-    if not ctx:exec("command -v mise >/dev/null 2>&1") then
-      error("mise is required to scaffold dashboard-go-htmx")
-    end
-
     -- Derived variables available to every rendered file.
     ctx.vars.MODULE = ctx.vars.ORG .. "/" .. ctx.vars.PROJECT_NAME
 
@@ -74,9 +68,22 @@ local M = {
     must_exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "db", "wiki" })
     must_exec({ "cd", dest, "&&", "git", "commit", "-m", "'Initial scaffold'" })
 
+    local install = ctx:prompt("Install project tools with mise now? y/N", "n")
+    if install:lower() == "y" or install:lower() == "yes" then
+      if ctx:exec("command -v mise >/dev/null 2>&1") then
+        must_exec({ "cd", dest, "&&", "mise", "install" })
+      else
+        print("mise was not found. Install mise, then run:")
+        print("  cd " .. dest .. " && mise install")
+      end
+    else
+      print("Tools were not installed. Install mise, then run:")
+      print("  cd " .. dest .. " && mise install")
+    end
+
     print("\nNext steps:")
     print("  cd " .. dest)
-    print("  mise install && mise run setup && mise run generate")
+    print("  mise run setup && mise run generate")
     print("  mise run db:up")
     print("  mise run dev")
   end

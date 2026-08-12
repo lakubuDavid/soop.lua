@@ -21,6 +21,7 @@ local function shell_quote(s)
 end
 
 ---@class Context
+---@field prompt fun(self:Context, message:string, default?:string):string
 local ctx = {
   dry_run = false,
   template_dir = nil,
@@ -56,6 +57,21 @@ local ctx = {
       return true
     end
     return os.execute("mkdir -p " .. path)
+  end,
+
+  ---@param self Context
+  ---@param message string
+  ---@param default? string
+  prompt = function(self, message, default)
+    default = default or ""
+    if self.dry_run then
+      dry_run_message("prompt " .. message .. " [default=" .. default .. "]")
+      return default
+    end
+    io.write(message .. " [" .. default .. "]: ")
+    local value = io.read()
+    if value == nil or value == "" then return default end
+    return value
   end,
 
   ---@param self Context

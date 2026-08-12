@@ -100,6 +100,9 @@ When a whole directory is scaffolded, `ctx:scaffold_dir` renders `@@NAME@@`
 tokens and `${NAME}` tokens. Prefix either form with a backslash to preserve
 it for the generated project, for example `\${DATABASE}` or `\@@NAME@@`.
 
+`ctx:prompt(message, default)` asks an optional interactive question. In dry
+run mode it returns the default without blocking.
+
 Available context methods:
 
 | Method | Purpose |
