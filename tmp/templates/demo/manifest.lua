@@ -20,7 +20,7 @@ local M = {
     ctx:mkdir(dest)
     ctx:copy_template(ctx.template_dir .. "/README.md.tpl", dest .. "/README.md")
     ctx:copy_template(ctx.template_dir .. "/src/main.lua.tpl", dest .. "/src/main.lua")
-    print( "Project created: " .. dest )
+    ctx:exec({ "printf", "Project created: " .. dest })
   end
 }
 
