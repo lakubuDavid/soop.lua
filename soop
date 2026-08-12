@@ -25,6 +25,47 @@ local function shell_quote(s)
   return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
+local function list_templates()
+  local command = "find " .. shell_quote(TEMPLATES_DIR) .. " -mindepth 1 -maxdepth 1 -type d -print 2>/dev/null | sort"
+  local pipe = io.popen(command)
+  if not pipe then
+    io.stderr:write("Unable to read templates directory: " .. TEMPLATES_DIR .. "\n")
+    return
+  end
+
+  local rows = {}
+  for path in pipe:lines() do
+    local name = path:match("([^/]+)$")
+    local manifest_path = path .. "/manifest.lua"
+    local file = io.open(manifest_path, "r")
+    if file then
+      local source = file:read("*all")
+      file:close()
+      -- Read only the literal description field. Listing must not execute a
+      -- manifest, since manifests are executable Lua programs.
+      local description = source:match("description%s*=%s*['\"]([^'\"]*)['\"]")
+      rows[#rows + 1] = { name = name, description = description or "(no description)" }
+    end
+  end
+  pipe:close()
+
+  if #rows == 0 then
+    print("No templates found in " .. TEMPLATES_DIR)
+    return
+  end
+
+  local name_width = #"NAME"
+  for _, row in ipairs(rows) do
+    if #row.name > name_width then name_width = #row.name end
+  end
+
+  print(string.format("%-" .. name_width .. "s  %s", "NAME", "DESCRIPTION"))
+  print(string.rep("-", name_width) .. "  " .. string.rep("-", 48))
+  for _, row in ipairs(rows) do
+    print(string.format("%-" .. name_width .. "s  %s", row.name, row.description))
+  end
+end
+
 local function color(code, message)
   if NO_COLOR then return message end
   return string.char(27) .. "[" .. code .. "m" .. message .. string.char(27) .. "[0m"
@@ -364,15 +405,15 @@ local ctx = {
 
 ---@class ManifestVariable
 ---@field name string
----@field prompt string
----@field default string
+---@field prompt? string
+---@field default? string
 ---@field options? string[]
 ---@field validate? fun(val:string):boolean
 ---@field inherits? boolean
 
 ---@class Manifest
----@field scaffold fun(ctx:Context):void
----@field cleanup? fun(ctx:Context):void
+---@field scaffold fun(ctx:Context)
+---@field cleanup? fun(ctx:Context)
 ---@field variables ManifestVariable[]
 
 ---@param variables ManifestVariable[]
@@ -520,8 +561,7 @@ function main()
       os.exit(code)
     end
   elseif args.command == "list" or args.command == "ls" then
-    -- List available templates
-    os.execute("ls -la " .. TEMPLATES_DIR)
+    list_templates()
   elseif args.command == "create" then
     -- Create a new template structure
     io.stderr:write("[TODO] Create command not implemented\n")

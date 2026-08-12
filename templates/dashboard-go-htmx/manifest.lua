@@ -9,6 +9,7 @@
 ---
 ---@type Manifest
 local M = {
+  description = "Domain-neutral Go + HTMX dashboard monorepo",
   variables = {
     {
       name = "PROJECT_NAME",
