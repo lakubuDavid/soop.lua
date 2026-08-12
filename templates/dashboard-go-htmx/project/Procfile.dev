@@ -1,0 +1,2 @@
+api: sh -c 'cd apps/api && mise run dev'
+dashboard: sh -c 'cd apps/dashboard && mise run dev'

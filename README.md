@@ -96,6 +96,10 @@ local M = {
 return M
 ```
 
+When a whole directory is scaffolded, `ctx:scaffold_dir` renders `@@NAME@@`
+tokens and `${NAME}` tokens. Prefix either form with a backslash to preserve
+it for the generated project, for example `\${DATABASE}` or `\@@NAME@@`.
+
 Available context methods:
 
 | Method | Purpose |

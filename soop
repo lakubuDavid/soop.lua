@@ -16,6 +16,10 @@ local function dry_run_message(action)
   print("[dry-run] " .. action)
 end
 
+local function shell_quote(s)
+  return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
 ---@class Context
 local ctx = {
   dry_run = false,
@@ -63,10 +67,93 @@ local ctx = {
     local content = input:read("*all")
     input:close()
 
+    local destdir = dest:match("^(.*/)[^/]*$")
+    if destdir then
+      self:mkdir(destdir)
+    end
+
     local output = io.open(dest, "wb")
     if not output then error("Cannot write file: " .. dest) end
     output:write(content)
     output:close()
+  end,
+
+  ---@param self Context
+  ---@param src string
+  ---@param dest string
+  ---@param vars? table
+  --
+  -- Recursively copies a directory tree. Every text file is rendered with the
+  -- collected variables before being written:
+  --   @@NAME@@   substituted with the value, empty string when unknown
+  --   ${NAME}    substituted with the value, left literal when unknown
+  -- Useful for scaffolding a whole project from a static tree.
+  scaffold_dir = function(self, src, dest, vars)
+    local _vars = vars or self.vars
+    local src_norm = src:gsub("/+$", "")
+    local dest_norm = dest:gsub("/+$", "")
+
+    local f = io.popen("find " .. shell_quote(src_norm) .. " -type f -print 2>/dev/null")
+    if not f then error("Cannot list directory: " .. src) end
+    local listing = f:read("*a")
+    f:close()
+
+    local function render(content)
+      -- A backslash escapes either token form so generated shell/JS templates
+      -- can retain runtime interpolation (for example, \${DATABASE}).
+      local escaped = {}
+      local marker = string.char(1)
+      local function protect(token)
+        escaped[#escaped + 1] = token
+        return marker .. tostring(#escaped) .. marker
+      end
+
+      content = content:gsub("\\(%$%{[%w_]+%})", protect)
+      content = content:gsub("\\(@@[%w_]+@@)", protect)
+
+      content = content:gsub("@@([%w_]+)@@", function(name)
+        local val = _vars[name]
+        if val ~= nil then return tostring(val) end
+        return ""
+      end)
+      content = content:gsub("%$%{([%w_]+)%}", function(name)
+        local val = _vars[name]
+        if val ~= nil then return tostring(val) end
+        return "${" .. name .. "}"
+      end)
+
+      content = content:gsub(marker .. "(%d+)" .. marker, function(index)
+        return escaped[tonumber(index)]
+      end)
+      return content
+    end
+
+    for file in listing:gmatch("[^\n]+") do
+      if file ~= "" then
+        local rel = file:sub(#src_norm + 1)
+        if rel:sub(1, 1) == "/" then rel = rel:sub(2) end
+        local out = dest_norm .. "/" .. rel
+
+        if self.dry_run then
+          dry_run_message("scaffold " .. rel)
+        else
+          local input = io.open(file, "rb")
+          if not input then error("Cannot open file: " .. file) end
+          local content = input:read("*a")
+          input:close()
+
+          local rendered = render(content)
+          local destdir = out:match("^(.*/)[^/]*$")
+          if destdir then
+            self:mkdir(destdir)
+          end
+          local output = io.open(out, "wb")
+          if not output then error("Cannot write file: " .. out) end
+          output:write(rendered)
+          output:close()
+        end
+      end
+    end
   end,
 
   ---@param self Context

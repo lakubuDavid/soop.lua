@@ -1,0 +1,69 @@
+[env]
+_.file = '.env'
+
+[tools]
+go = "1.26.5"
+node = "24.18.0"
+"go:github.com/a-h/templ/cmd/templ" = "0.3.1020"
+air = "1.65.3"
+goreman = "latest"
+dbmate = "latest"
+sqlc = "latest"
+usql = "latest"
+hurl = "latest"
+xh = "latest"
+"npm:unocss" = "66.7.5"
+"npm:typescript" = "7.0.2"
+"npm:@playwright/test" = "1.50.0"
+playwright = "latest"
+
+[monorepo]
+config_roots = ["apps/api", "apps/dashboard"]
+
+# --- Root tasks -------------------------------------------------------------
+
+[tasks.setup]
+description = "Install + prepare everything"
+depends = ["//apps/api:setup", "//apps/dashboard:setup"]
+
+[tasks.generate]
+description = "Regenerate templ, sqlc, TypeScript, UnoCSS"
+depends = ["//apps/api:generate", "//apps/dashboard:generate"]
+
+[tasks.dev]
+description = "Start api + dashboard (goreman)"
+run = "goreman start"
+
+[tasks.build]
+description = "Build all apps"
+depends = ["//apps/api:build", "//apps/dashboard:build"]
+
+[tasks.test]
+description = "Run all tests"
+depends = ["//apps/api:test", "//apps/dashboard:test"]
+
+[tasks.e2e]
+description = "Run Playwright browser tests"
+run = "npm --prefix apps/dashboard run test:e2e"
+
+# --- Database ---------------------------------------------------------------
+
+[tasks."db:up"]
+description = "Apply migrations for DB_DRIVER"
+run = "dbmate --migrations-dir db/\${DATABASE}/migrations --env DATABASE_URL up"
+
+[tasks."db:down"]
+description = "Roll back the last migration"
+run = "dbmate --migrations-dir db/\${DATABASE}/migrations --env DATABASE_URL down"
+
+[tasks."db:status"]
+description = "Show migration status"
+run = "dbmate --migrations-dir db/\${DATABASE}/migrations --env DATABASE_URL status"
+
+[tasks."db:new"]
+description = "Create a new migration (usage: mise run db:new name=add_x)"
+run = "dbmate --migrations-dir db/\${DATABASE}/migrations new $name"
+
+[tasks."db:cli"]
+description = "Open the database with usql"
+run = "usql \${DATABASE_URL}"

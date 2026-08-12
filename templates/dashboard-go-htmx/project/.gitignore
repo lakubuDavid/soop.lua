@@ -1,0 +1,11 @@
+.DS_Store
+.env
+node_modules/
+bin/
+tmp/
+*.log
+test-results/
+playwright-report/
+data/
+*.db
+*.sqlite
