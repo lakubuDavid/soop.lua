@@ -1,0 +1,30 @@
+[env]
+_.file = '../../.env'
+
+[tasks.setup]
+description = "Install dashboard dependencies"
+run = "npm install && go mod tidy"
+
+[tasks.generate]
+description = "Generate templ, TypeScript, and UnoCSS"
+depends = ["generate:templ", "generate:ts", "generate:css"]
+
+[tasks."generate:templ"]
+run = "templ generate views components"
+
+[tasks."generate:ts"]
+run = "npm run build:ts"
+
+[tasks."generate:css"]
+run = "npx unocss 'views/**/*.templ' 'components/**/*.templ' -o static/uno.css"
+
+[tasks.dev]
+description = "Run dashboard with hot reload"
+run = "air"
+
+[tasks.build]
+depends = ["generate"]
+run = "go build -o ./bin/dashboard ."
+
+[tasks.test]
+run = "go test ./..."

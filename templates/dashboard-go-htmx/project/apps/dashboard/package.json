@@ -1,0 +1,23 @@
+{
+  "name": "@@PROJECT_NAME@@-dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:ts": "tsc",
+    "watch:ts": "tsc --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@iconify-json/tabler": "^1.2.35",
+    "@playwright/test": "^1.50.0",
+    "@unocss/preset-icons": "^66.7.5",
+    "@unocss/preset-wind4": "^66.7.5",
+    "typescript": "^7.0.2",
+    "unocss": "^66.7.5"
+  },
+  "dependencies": {
+    "alpinejs": "^3.14.9",
+    "htmx.org": "^2.0.4"
+  }
+}

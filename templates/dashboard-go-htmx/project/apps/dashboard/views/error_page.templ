@@ -1,0 +1,7 @@
+package views
+
+templ ErrorPage(status int, title string, message string) {
+	@Layout(LayoutProps{Title: title}) {
+		<main class="grid min-h-screen place-items-center p-6"><div class="card max-w-lg text-center"><p class="text-sm text-[var(--color-muted)]">{ status }</p><h1 class="mt-2 text-2xl font-bold">{ title }</h1><p class="mt-2 text-[var(--color-muted)]">{ message }</p><a class="btn-primary mt-6" href="/dashboard">Back to dashboard</a></div></main>
+	}
+}
