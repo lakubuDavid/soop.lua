@@ -101,9 +101,12 @@ Dry-run output labels each operation with `[dry-run]`.
 
 ## Mise tooling
 
-Mise integration is opt-in for templates that support it. Pass `--mise` or
-set `SOOP_MISE=1` (also accepted: `SOOP_ADD_MISE=1`) to install the relevant
-latest tool into the generated project:
+Mise integration is opt-in for templates that support it. Templates declare
+their tools in a `tooling` field, for example `tooling = { "go" }`. A tooling
+entry can also name a manifest variable; the Hono template uses
+`tooling = { "RUNTIME", "PACKAGE_MANAGER" }` so the selected tools are used.
+Pass `--mise` or set `SOOP_MISE=1` (also accepted: `SOOP_ADD_MISE=1`) to install
+the declared latest tools into the generated project:
 
 ```sh
 soop --mise new go

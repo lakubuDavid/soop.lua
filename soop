@@ -153,6 +153,18 @@ end
 
 local collect_variables
 
+local function setup_manifest_tooling(manifest, context)
+  if not context.mise_enabled or not manifest.tooling then return true end
+  if not context.destination or context.destination == "" then
+    error("Manifest tooling requires a project destination", 0)
+  end
+  context:mkdir(context.destination)
+  if not context:setup_mise(context.destination, manifest.tooling) then
+    error("mise tooling setup failed", 0)
+  end
+  return true
+end
+
 ---@class Context
 ---@field prompt fun(self:Context, message:string, default?:string):string
 ---@field info fun(self:Context, message:string):void
@@ -246,7 +258,8 @@ local ctx = {
     if not self.mise_enabled then return true end
     local requested = type(tools) == "table" and tools or { tools }
     for _, tool in ipairs(requested) do
-      if not self:exec({ "cd", destination, "&&", "mise", "use", tool .. "@latest" }, { skip_mise = true }) then
+      local resolved = self.vars[tool] or tool
+      if not self:exec({ "cd", destination, "&&", "mise", "use", resolved .. "@latest" }, { skip_mise = true }) then
         return false
       end
     end
@@ -331,7 +344,10 @@ local ctx = {
       error("Nested manifests are limited to one child level", 0)
     end
 
-    local ok, err = pcall(function() manifest.scaffold(child) end)
+    local ok, err = pcall(function()
+      setup_manifest_tooling(manifest, child)
+      manifest.scaffold(child)
+    end)
     if not ok then
       if manifest.cleanup then
         local cleanup_ok, cleanup_err = pcall(function() manifest.cleanup(child) end)
@@ -508,6 +524,7 @@ local ctx = {
 ---@class Manifest
 ---@field scaffold fun(ctx:Context)
 ---@field cleanup? fun(ctx:Context)
+---@field tooling? string[]  -- tool names or variable names resolved from ctx.vars
 ---@field variables ManifestVariable[]
 
 ---@param variables ManifestVariable[]
@@ -642,6 +659,7 @@ function main()
     -- scaffold has started, so a manifest can remove partial output.
     ctx._scaffold_started = true
     local ok, err = pcall(function()
+      setup_manifest_tooling(manifest, ctx)
       manifest.scaffold(ctx)
     end)
 

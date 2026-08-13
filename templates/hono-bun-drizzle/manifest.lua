@@ -1,6 +1,7 @@
 local M = {
   summary = "Hono Bun Drizzle starter",
   description = "Creates a Bun and Hono starter with Drizzle ORM, SQLite examples, reusable components, and a justfile.",
+  tooling = { "RUNTIME", "PACKAGE_MANAGER" },
   variables = {
     {
       name = "RUNTIME",
@@ -25,12 +26,6 @@ local M = {
     local dest = ctx.vars.PROJECT_NAME
     ctx:mkdir(dest)
     ctx:scaffold_dir(ctx.template_dir .. "/project", dest)
-    local tools = { ctx.vars.RUNTIME }
-    if ctx.vars.PACKAGE_MANAGER ~= ctx.vars.RUNTIME then
-      tools[#tools + 1] = ctx.vars.PACKAGE_MANAGER
-    end
-    if not ctx:setup_mise(dest, tools) then error("mise setup failed") end
-
     local install_commands = {
       npm = "npm install",
       yarn = "yarn install",
