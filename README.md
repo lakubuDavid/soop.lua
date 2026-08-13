@@ -183,8 +183,27 @@ soop list                   List template names and short summaries
 soop ls                     Alias for list
 soop details <template-name> Show summary and full description
 soop d <template-name>      Alias for details
+soop completion <shell>     Generate bash, zsh, or fish completion
 soop --mise                 Enable mise tooling for the generated project
 soop --help                 Show help
+```
+
+## Shell completion
+
+Generate completion scripts for the shell you use:
+
+```sh
+soop completion bash > ~/.local/share/bash-completion/completions/soop
+soop completion zsh > ~/.zfunc/_soop
+soop completion fish > ~/.config/fish/completions/soop.fish
+```
+
+The generated scripts complete commands, options, and current template names.
+They query the hidden machine-readable endpoint below, so completions follow
+changes to the configured template directory:
+
+```sh
+soop __complete templates
 ```
 
 ## Testing

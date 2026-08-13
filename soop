@@ -6,6 +6,7 @@ local SCRIPT_DIR = arg[0]:match("^(.*/)") or "./"
 package.path = SCRIPT_DIR .. "?.lua;" .. SCRIPT_DIR .. "?/init.lua;" .. package.path
 
 local argparse = require "libs.argparse"
+local completion = require "completion"
 
 local function shell_quote(s)
   return "'" .. s:gsub("'", "'\\''") .. "'"
@@ -112,6 +113,22 @@ local function list_templates()
   for _, row in ipairs(rows) do
     print(string.format("%-" .. name_width .. "s  %s", row.name, row.summary))
   end
+end
+
+local function complete_template_names()
+  local command = "find " .. shell_quote(TEMPLATES_DIR) .. " -mindepth 1 -maxdepth 1 -type d -print 2>/dev/null | sort"
+  local pipe = io.popen(command)
+  if not pipe then return end
+
+  for path in pipe:lines() do
+    local name = path:match("([^/]+)$")
+    local manifest = io.open(path .. "/manifest.lua", "r")
+    if manifest then
+      manifest:close()
+      print(name)
+    end
+  end
+  pipe:close()
 end
 
 local function template_details(template_name)
@@ -599,6 +616,12 @@ function main()
   parser
       :command "details d"
       :argument "template-name"
+  parser
+      :command "completion"
+      :argument "shell"
+  parser
+      :command "__complete"
+      :argument "kind"
 
   ---@type {command: "new" | "create" | "list" | "details", template_name?: string, [string]: any}
   local args = parser:parse()
@@ -699,6 +722,22 @@ function main()
     end
   elseif args.command == "list" or args.command == "ls" then
     list_templates()
+  elseif args.command == "__complete" then
+    local kind = args.kind or args["kind"]
+    if kind == "templates" then
+      complete_template_names()
+    else
+      log_error("Unknown completion target: " .. tostring(kind))
+      os.exit(1)
+    end
+  elseif args.command == "completion" then
+    local shell = args.shell
+    local generator = completion[shell]
+    if not generator then
+      log_error("Unsupported shell: " .. tostring(shell) .. " (expected bash, zsh, or fish)")
+      os.exit(1)
+    end
+    io.write(generator("soop"))
   elseif args.command == "details" or args.command == "d" then
     local template_name = args.template_name or args["template-name"]
     if not template_name then
