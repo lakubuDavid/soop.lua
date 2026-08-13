@@ -27,6 +27,12 @@ clones the repository into `/tmp`, and copies the launcher, bundled libraries,
 and templates into place:
 
 ```sh
+curl -fsSL https://lakubudavid.me/soop/install.sh | sh
+```
+
+The installer script is also available directly from GitHub:
+
+```sh
 curl -fsSL https://raw.githubusercontent.com/lakubuDavid/soop.lua/main/install.sh | sh
 ```
 
