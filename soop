@@ -169,7 +169,7 @@ local ctx = {
   template_dir = nil,
   ---@param self Context
   ---@param cmd string | table<string>
-  ---@param opts? {run_in_dry_run?:boolean}
+  ---@param opts? {run_in_dry_run?:boolean, skip_mise?:boolean}
   exec = function(self, cmd, opts)
     local _cmd = ""
     if type(cmd) == "table" then
@@ -180,8 +180,25 @@ local ctx = {
       _cmd = cmd
     end
 
+    _cmd = _cmd:gsub("^%s+", "")
+    local command_uses_mise = _cmd:match("^mise[%s]") or _cmd:match("[%s;&|]mise[%s]")
+    local uses_mise = self.mise_enabled
+      and not (opts and opts.skip_mise)
+      and not command_uses_mise
+    if uses_mise and self.destination and self.destination ~= "" then
+      -- Run from the generated project so mise resolves its local config.
+      -- Commands commonly already begin with `cd <destination> &&`; remove
+      -- that prefix before wrapping them to avoid changing directories twice.
+      local prefix = "cd " .. self.destination .. " && "
+      local project_cmd = _cmd
+      if project_cmd:sub(1, #prefix) == prefix then
+        project_cmd = project_cmd:sub(#prefix + 1)
+      end
+      _cmd = "cd " .. shell_quote(self.destination) .. " && mise x -- sh -c " .. shell_quote(project_cmd)
+    end
+
     if self.dry_run and not (opts and opts.run_in_dry_run) then
-      dry_run_message("exec " .. _cmd)
+      dry_run_message("exec  " .. _cmd)
       return true
     end
 
@@ -229,7 +246,7 @@ local ctx = {
     if not self.mise_enabled then return true end
     local requested = type(tools) == "table" and tools or { tools }
     for _, tool in ipairs(requested) do
-      if not self:exec({ "cd", destination, "&&", "mise", "use", tool .. "@latest" }) then
+      if not self:exec({ "cd", destination, "&&", "mise", "use", tool .. "@latest" }, { skip_mise = true }) then
         return false
       end
     end
