@@ -2,9 +2,9 @@
     just --list
 build-run:
     mvn package
-    mvn exec:java -Dexec.mainClass="com.{name}.app.App"
+    mvn exec:java -Dexec.mainClass="com.@@PROJECT_NAME@@.app.App"
 run:
-    mvn exec:java -Dexec.mainClass="com.{name}.app.App"
+    mvn exec:java -Dexec.mainClass="com.@@PROJECT_NAME@@.app.App"
 build:
     mvn package
 clean:

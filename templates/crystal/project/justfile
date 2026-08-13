@@ -2,9 +2,9 @@
     just --list
 
 run:
-    crystal run src/{name}.cr
+    crystal run src/@@PROJECT_NAME@@.cr
 
 build:
-    crystal build src/{name}.cr
+    crystal build src/@@PROJECT_NAME@@.cr
 
 

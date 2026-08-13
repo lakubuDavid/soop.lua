@@ -1,4 +1,4 @@
-SOOP_TEMPLATES_PATH := "${HOME}/.config/soop/templates/hono-ts/_templates"
+SOOP_TEMPLATES_PATH := "\${HOME}/.config/soop/templates/hono-ts/_templates"
 SRC_DIR := "./src"
 @default:
     just --list
