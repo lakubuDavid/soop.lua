@@ -194,7 +194,7 @@ local ctx = {
       if project_cmd:sub(1, #prefix) == prefix then
         project_cmd = project_cmd:sub(#prefix + 1)
       end
-      _cmd = "cd " .. shell_quote(self.destination) .. " && mise x -- sh -c " .. shell_quote(project_cmd)
+      _cmd = "mise x -C " .. shell_quote(self.destination) .. " -- sh -c " .. shell_quote(project_cmd)
     end
 
     if self.dry_run and not (opts and opts.run_in_dry_run) then
