@@ -1,7 +1,7 @@
 local M = {
   summary = "Hono Bun Drizzle starter",
   description = "Creates a Bun and Hono starter with Drizzle ORM, SQLite examples, reusable components, and a justfile.",
-  tooling = { "RUNTIME", "PACKAGE_MANAGER" },
+  tooling = { "${RUNTIME}", "${PACKAGE_MANAGER}" },
   variables = {
     {
       name = "RUNTIME",

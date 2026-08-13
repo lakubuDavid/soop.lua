@@ -258,7 +258,11 @@ local ctx = {
     if not self.mise_enabled then return true end
     local requested = type(tools) == "table" and tools or { tools }
     for _, tool in ipairs(requested) do
-      local resolved = self.vars[tool] or tool
+      local variable_name = tool:match("^%${([%w_]+)}$")
+      local resolved = variable_name and self.vars[variable_name] or tool
+      if not resolved or resolved == "" then
+        error("Missing tooling variable: " .. tostring(variable_name or tool), 0)
+      end
       if not self:exec({ "cd", destination, "&&", "mise", "use", resolved .. "@latest" }, { skip_mise = true }) then
         return false
       end
@@ -524,7 +528,7 @@ local ctx = {
 ---@class Manifest
 ---@field scaffold fun(ctx:Context)
 ---@field cleanup? fun(ctx:Context)
----@field tooling? string[]  -- tool names or variable names resolved from ctx.vars
+---@field tooling? string[]  -- tool names or explicit ${VARIABLE} references
 ---@field variables ManifestVariable[]
 
 ---@param variables ManifestVariable[]
