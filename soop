@@ -6,6 +6,7 @@ local SCRIPT_DIR = arg[0]:match("^(.*/)") or "./"
 package.path = SCRIPT_DIR .. "?.lua;" .. SCRIPT_DIR .. "?/init.lua;" .. package.path
 
 local argparse = require "libs.argparse"
+local common = require "common"
 local completion = require "completion"
 
 local function shell_quote(s)
@@ -426,49 +427,6 @@ local ctx = {
     local listing = f:read("*a")
     f:close()
 
-    local function render(content)
-      -- A backslash escapes either token form so generated shell/JS templates
-      -- can retain runtime interpolation (for example, \${DATABASE}).
-      local escaped = {}
-      local marker = string.char(1)
-      local function protect(token)
-        escaped[#escaped + 1] = token
-        return marker .. tostring(#escaped) .. marker
-      end
-
-      content = content:gsub("\\(%$%{[%w_]+%})", protect)
-      content = content:gsub("\\(%${{%s*[%w_]+%s*:%s*[%w_]+%s*}})", protect)
-      content = content:gsub("\\(@@[%w_]+@@)", protect)
-
-      content = content:gsub("@@([%w_]+)@@", function(name)
-        local val = _vars[name]
-        if val ~= nil then return tostring(val) end
-        return ""
-      end)
-      content = content:gsub("%${{%s*([%w_]+)%s*:%s*([%w_]+)%s*}}", function(name, filter)
-        local val = _vars[name]
-        if val == nil then return "${{" .. name .. ":" .. filter .. "}}" end
-        val = tostring(val)
-        if filter == "safe_name" then
-          return (val:gsub("-", "_"))
-        elseif filter == "lower" then
-          return val:lower()
-        elseif filter == "upper" then
-          return val:upper()
-        end
-        error("Unknown interpolation filter: " .. filter, 0)
-      end)
-      content = content:gsub("%$%{([%w_]+)%}", function(name)
-        local val = _vars[name]
-        if val ~= nil then return tostring(val) end
-        return "${" .. name .. "}"
-      end)
-
-      content = content:gsub(marker .. "(%d+)" .. marker, function(index)
-        return escaped[tonumber(index)]
-      end)
-      return content
-    end
 
     for file in listing:gmatch("[^\n]+") do
       if file ~= "" then
@@ -484,7 +442,7 @@ local ctx = {
           local content = input:read("*a")
           input:close()
 
-          local rendered = render(content)
+          local rendered = common.template_string(content, _vars)
           local destdir = out:match("^(.*/)[^/]*$")
           if destdir then
             self:mkdir(destdir)
@@ -517,13 +475,7 @@ local ctx = {
     local content = input:read("*all")
     input:close()
 
-    local rendered = content:gsub("%$%{([%w_]+)%}", function(varname)
-      local val = _vars[varname]
-      if not val then
-        error("Template variable not found: " .. varname)
-      end
-      return tostring(val)
-    end)
+    local rendered = common.template_string(content, _vars, { strict = true })
 
     if self.dry_run then
       dry_run_message("render " .. src .. " -> " .. dest)

@@ -4,6 +4,8 @@ A small Lua project scaffolder driven by templates written in Lua.
 
 A template is a directory containing a `manifest.lua`. The manifest declares
 interactive variables and a `scaffold(ctx)` function that creates the project.
+Shared interpolation behavior is implemented in `common.lua` through
+`common.template_string(content, variables)`.
 Because the scaffold is Lua, templates can copy files, render variables, and
 run project generators without requiring a separate template language.
 
