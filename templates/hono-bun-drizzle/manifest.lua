@@ -6,13 +6,13 @@ local M = {
       name = "RUNTIME",
       prompt = "JavaScript runtime?",
       options = { "node", "deno", "bun" },
-      default = "bun"
+      default = "node"
     },
     {
       name = "PACKAGE_MANAGER",
       prompt = "Package manager?",
       options = { "npm", "yarn", "bun", "pnpm", "deno" },
-      default = "bun"
+      default = "npm"
     },
     {
       name = "PROJECT_NAME",
