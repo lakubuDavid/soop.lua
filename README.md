@@ -41,6 +41,31 @@ export PATH="$HOME/.local/bin:$PATH"
 The launcher resolves its bundled libraries relative to itself, so it can be
 run from any working directory.
 
+## Configuration
+
+Soop loads the first config file it finds from:
+
+```text
+$XDG_CONFIG_HOME/soop/config.lua
+~/.config/soop/config.lua
+~/.soop/config.lua
+```
+
+You can also set `SOOP_CONFIG_FILE` to an explicit path. A config is a Lua
+table, for example:
+
+```lua
+return {
+  no_color = false,
+  mise = true,
+  templates_dir = os.getenv("HOME") .. "/.soop/templates"
+}
+```
+
+Configuration values can be overridden with environment variables or command
+line options. Useful overrides include `SOOP_TEMPLATES_DIR`, `SOOP_MISE=1`,
+`NO_COLOR=1`, `--templates-dir <path>`, `--mise`, and `--no-color`.
+
 ## Quick start
 
 Templates are loaded from `$SOOP_TEMPLATES_DIR` when it is set. Otherwise,

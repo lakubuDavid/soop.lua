@@ -11,6 +11,11 @@ local function shell_quote(s)
   return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
+local function color(code, message)
+  if _G.SOOP_NO_COLOR then return message end
+  return string.char(27) .. "[" .. code .. "m" .. message .. string.char(27) .. "[0m"
+end
+
 -- Directory containing templates. Prefer the explicit environment variable,
 -- then a local checkout's templates/ directory, and finally the installed
 -- user template directory.
@@ -25,7 +30,31 @@ local function directory_exists(path)
 end
 local local_templates = CWD .. "/templates"
 local installed_templates = HOME ~= "" and (HOME .. "/.soop/templates") or ""
-local TEMPLATES_DIR = os.getenv("SOOP_TEMPLATES_DIR")
+local config_candidates = {}
+local config_override = os.getenv("SOOP_CONFIG_FILE")
+if config_override then config_candidates[#config_candidates + 1] = config_override end
+if HOME ~= "" then
+  local xdg = os.getenv("XDG_CONFIG_HOME") or (HOME .. "/.config")
+  config_candidates[#config_candidates + 1] = xdg .. "/soop/config.lua"
+  config_candidates[#config_candidates + 1] = HOME .. "/.soop/config.lua"
+end
+
+local CONFIG = {}
+for _, config_path in ipairs(config_candidates) do
+  local file = io.open(config_path, "r")
+  if file then
+    file:close()
+    local chunk, load_error = loadfile(config_path)
+    if not chunk then error("Unable to load config " .. config_path .. ": " .. load_error) end
+    local ok, value = pcall(chunk)
+    if not ok then error("Unable to evaluate config " .. config_path .. ": " .. value) end
+    if type(value) ~= "table" then error("Config must return a table: " .. config_path) end
+    CONFIG = value
+    break
+  end
+end
+
+local TEMPLATES_DIR = os.getenv("SOOP_TEMPLATES_DIR") or CONFIG.templates_dir
 if not TEMPLATES_DIR then
   if directory_exists(local_templates) then
     TEMPLATES_DIR = local_templates
@@ -35,12 +64,12 @@ if not TEMPLATES_DIR then
 end
 local _env_no_color = os.getenv("NO_COLOR")
 local NO_COLOR =
-    _env_no_color ~= nil
-    and (_env_no_color == 1 or _env_no_color == "1")
-    or false
+    _env_no_color ~= nil and (_env_no_color == 1 or _env_no_color == "1")
+    or CONFIG.no_color == true
+_G.SOOP_NO_COLOR = NO_COLOR
 
 local function dry_run_message(action)
-  print("[dry-run] " .. action)
+  print(color("36", "[dry-run] " .. action))
 end
 
 local function list_templates()
@@ -78,8 +107,8 @@ local function list_templates()
     if #row.name > name_width then name_width = #row.name end
   end
 
-  print(string.format("%-" .. name_width .. "s  %s", "NAME", "SUMMARY"))
-  print(string.rep("-", name_width) .. "  " .. string.rep("-", 48))
+  print(color("1;36", string.format("%-" .. name_width .. "s  %s", "NAME", "SUMMARY")))
+  print(color("90", string.rep("-", name_width) .. "  " .. string.rep("-", 48)))
   for _, row in ipairs(rows) do
     print(string.format("%-" .. name_width .. "s  %s", row.name, row.summary))
   end
@@ -102,13 +131,8 @@ local function template_details(template_name)
   print("Name:        " .. template_name)
   print("Summary:     " .. summary)
   print("Description: " .. description)
-  print("Path:        " .. path)
+  print(color("90", "Path:        " .. path))
   return true
-end
-
-local function color(code, message)
-  if NO_COLOR then return message end
-  return string.char(27) .. "[" .. code .. "m" .. message .. string.char(27) .. "[0m"
 end
 
 local function log_info(message)
@@ -524,6 +548,8 @@ function main()
       :flag "--mise"
   parser
       :flag "--no-color"
+  parser
+      :option "--templates-dir <path>"
 
   parser
       :command "new n"
@@ -542,6 +568,14 @@ function main()
   if not args.command then
     parser:print_help()
     os.exit(0)
+  end
+
+  if args["templates-dir"] then
+    TEMPLATES_DIR = args["templates-dir"]
+  end
+  if args.no_color then
+    NO_COLOR = true
+    _G.SOOP_NO_COLOR = true
   end
 
   if args.command == "new" or args.command == "n" then
@@ -573,9 +607,10 @@ function main()
       ctx.vars = collect_variables(manifest.variables)
     end
     ctx.dry_run = args.dry_run == true
-    NO_COLOR = args.no_color
     local mise_env = os.getenv("SOOP_MISE") or os.getenv("SOOP_ADD_MISE")
+    local mise_config = CONFIG.mise == true or CONFIG.add_mise == true
     ctx.mise_enabled = args.mise == true
+      or mise_config
       or mise_env == "1"
       or mise_env == "true"
       or mise_env == "yes"
