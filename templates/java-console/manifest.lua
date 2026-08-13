@@ -7,7 +7,7 @@ local M = {
     local dest = ctx.vars.PROJECT_NAME
     local package_name = dest:gsub("-", "_")
     ctx:mkdir(dest)
-    if not ctx:exec({ "mvn", "archetype:generate", "-DgroupId=com." .. package_name .. ".app", "-DartifactId=" .. dest, "-DarchetypeArtifactId=maven-archetype-quickstart", "-DarchetypeVersion=1.5", "-DinteractiveMode=false" }) then error("Maven setup failed") end
+    if not ctx:exec({ "mvn", "archetype:generate", "-DgroupId=com." .. package_name .. ".app", "-DartifactId=.", "-DarchetypeArtifactId=maven-archetype-quickstart", "-DarchetypeVersion=1.5", "-DinteractiveMode=false" }) then error("Maven setup failed") end
     ctx:scaffold_dir(ctx.template_dir .. "/project", dest)
   end
 }

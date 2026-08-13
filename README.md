@@ -212,9 +212,15 @@ soop __complete templates
 
 ## Testing
 
-The tests are POSIX shell scripts and cover both dry-run behavior and actual
-template rendering:
+The tests are POSIX shell scripts and cover both dry-run behavior, actual
+template rendering, and an integration smoke test for every bundled template.
+The template integration test uses `--mise` and `mise x`, so runtimes do not
+need to be permanently installed:
 
 ```sh
 ./tests/run.sh
+# run the template integration test directly
+./tests/test_templates.sh
+# fail instead of skipping a broken local toolchain
+SOOP_TEMPLATE_TEST_STRICT=1 ./tests/test_templates.sh
 ```

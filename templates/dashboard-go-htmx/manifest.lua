@@ -60,9 +60,12 @@ local M = {
     ctx:scaffold_dir(tpl .. "/wiki", dest .. "/wiki")
     ctx:run_child("modules/auth/manifest.lua")
 
-    must_exec({ "cd", dest, "&&", "git", "init" })
-    must_exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "wiki" })
-    must_exec({ "cd", dest, "&&", "git", "commit", "-m", "'Initial scaffold'" })
+    -- Git is project bookkeeping, not project tooling; keep it outside the
+    -- mise execution wrapper so a freshly generated mise.toml is not parsed
+    -- before the user has trusted it.
+    must_exec({ "cd", dest, "&&", "git", "init" }, { skip_mise = true })
+    must_exec({ "cd", dest, "&&", "git", "add", "--", "README.md", ".env.example", ".gitignore", "Procfile.dev", "go.work", "mise.toml", "apps", "packages", "wiki" }, { skip_mise = true })
+    must_exec({ "cd", dest, "&&", "git", "commit", "-m", "'Initial scaffold'" }, { skip_mise = true })
 
     if ctx.dry_run then
       -- The destination is intentionally not created during dry-run, so ask

@@ -6,7 +6,7 @@ local M = {
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME
     ctx:mkdir(dest)
-    if not ctx:exec({ "cargo", "init", "--bin", dest }) then error("cargo init failed") end
+    if not ctx:exec({ "cargo", "init", "--bin", "." }) then error("cargo init failed") end
     ctx:scaffold_dir(ctx.template_dir .. "/project", dest)
   end
 }

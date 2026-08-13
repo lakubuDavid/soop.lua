@@ -6,7 +6,7 @@ local M = {
   scaffold = function(ctx)
     local dest = ctx.vars.PROJECT_NAME
     ctx:mkdir(dest)
-    if not ctx:exec({ "dotnet", "new", "console", "-o", dest, "--use-program-main" }) then error("dotnet setup failed") end
+    if not ctx:exec({ "dotnet", "new", "console", "-o", ".", "--use-program-main" }) then error("dotnet setup failed") end
     ctx:scaffold_dir(ctx.template_dir .. "/project", dest)
   end
 }
