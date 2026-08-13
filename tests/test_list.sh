@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH=; cd -- "$(dirname -- "$0")/.." && pwd)
 SOOP="$ROOT/soop"
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/soop-list.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT

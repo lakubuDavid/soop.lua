@@ -1,0 +1,20 @@
+# Lefthook runs fast focused checks before commits and the complete check suite
+# before pushes. The actual commands live in mise.toml so they are also easy to
+# run locally with `mise run check`.
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: Lua syntax
+      glob: "**/*.lua"
+      run: mise run lint:lua
+
+    - name: Shell lint
+      glob: "**/*.sh"
+      run: mise run lint:shell
+
+pre-push:
+  jobs:
+    - name: Full check
+      tags: [lint, test]
+      run: mise run check

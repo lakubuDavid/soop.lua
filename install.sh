@@ -6,7 +6,7 @@ REPO_URL=${SOOP_REPO_URL:-https://github.com/lakubuDavid/soop.lua.git}
 BIN_DIR=${SOOP_BIN_DIR:-${1:-"$HOME/.local/bin"}}
 TEMPLATE_DIR=${SOOP_TEMPLATE_DIR:-"$HOME/.soop/templates"}
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_DIR=$(CDPATH=; cd -- "$(dirname -- "$0")" && pwd)
 SOURCE_DIR=$SCRIPT_DIR
 TEMP_DIR=
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH=; cd -- "$(dirname -- "$0")/.." && pwd)
 SOOP="$ROOT/soop"
 OUTPUT_DIR="$ROOT/tmp/test-output"
 

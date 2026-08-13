@@ -1,0 +1,20 @@
+[tools]
+lefthook = "latest"
+shellcheck = "latest"
+lua = "5.4"
+
+[tasks."lint:lua"]
+description = "Parse every project Lua file without writing bytecode"
+run = "find common.lua completion.lua soop libs templates tmp -type f -name '*.lua' -print0 | xargs -0 -n1 luac -p"
+
+[tasks."lint:shell"]
+description = "Run ShellCheck on the installer and test scripts"
+run = "shellcheck -S warning install.sh tests/*.sh"
+
+[tasks.test]
+description = "Run the project test suite"
+run = "./tests/run.sh"
+
+[tasks.check]
+description = "Run all static checks and tests"
+depends = ["lint:lua", "lint:shell", "test"]

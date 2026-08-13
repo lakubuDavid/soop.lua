@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH=; cd -- "$(dirname -- "$0")/.." && pwd)
 
 for test in "$ROOT"/tests/test_*.sh; do
   "$test"
