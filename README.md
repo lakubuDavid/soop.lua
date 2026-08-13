@@ -9,15 +9,28 @@ run project generators without requiring a separate template language.
 
 ## Install
 
-`soop` only needs Lua 5.4 and its bundled `argparse` dependency. Install the
-launcher into a user-local bin directory:
+`soop` only needs Lua 5.4 and its bundled `argparse` dependency. Install from
+a checkout into a user-local bin directory:
 
 ```sh
 ./install.sh
 # or choose a destination
 ./install.sh "$HOME/bin"
-DEST="$HOME/bin" ./install.sh
+SOOP_BIN_DIR="$HOME/bin" ./install.sh
 ```
+
+The installer also works remotely. It checks for the required launcher,
+`libs/`, and `templates/` files; when they are not local it requires `git`,
+clones the repository into `/tmp`, and copies the launcher, bundled libraries,
+and templates into place:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/lakubuDavid/soop.lua/main/install.sh | sh
+```
+
+By default, templates are installed into `~/.soop/templates` and the launcher
+into `~/.local/bin`. Override these locations with `SOOP_TEMPLATE_DIR` and
+`SOOP_BIN_DIR`.
 
 Make sure the destination is on your `PATH`:
 
@@ -60,6 +73,23 @@ SOOP_TEMPLATES_DIR="$(pwd)/tmp/templates" ./soop --dry-run new demo
 ```
 
 Dry-run output labels each operation with `[dry-run]`.
+
+## Mise tooling
+
+Mise integration is opt-in for templates that support it. Pass `--mise` or
+set `SOOP_MISE=1` (also accepted: `SOOP_ADD_MISE=1`) to install the relevant
+latest tool into the generated project:
+
+```sh
+soop --mise new go
+SOOP_MISE=1 soop new java-console
+```
+
+Examples include `go@latest`, `python@latest`, `dotnet@latest`,
+`maven@latest`, and `crystal@latest`. The Hono/Bun template additionally
+prompts for a JavaScript runtime (`node`, `deno`, or `bun`) and package manager
+(`npm`, `yarn`, `bun`, `pnpm`, or `deno`), installing both with mise when they
+differ.
 
 ## Writing a template
 
@@ -125,6 +155,7 @@ soop list                   List template names and short summaries
 soop ls                     Alias for list
 soop details <template-name> Show summary and full description
 soop d <template-name>      Alias for details
+soop --mise                 Enable mise tooling for the generated project
 soop --help                 Show help
 ```
 

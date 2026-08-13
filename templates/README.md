@@ -8,6 +8,7 @@ and adapted to the Lua Soop manifest and context system.
 | `go` | Basic Go console app |
 | `go-air` | Go app with air reload |
 | `go-backend` | Go chi/sqlc SQLite backend |
+| `rust` | Rust binary application |
 | `crystal` | Simple Crystal application |
 | `java-console` | Java console application |
 | `python` | Simple Python program |

@@ -7,10 +7,32 @@ package.path = SCRIPT_DIR .. "?.lua;" .. SCRIPT_DIR .. "?/init.lua;" .. package.
 
 local argparse = require "libs.argparse"
 
+local function shell_quote(s)
+  return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
 -- Directory containing templates. Prefer the explicit environment variable,
--- otherwise use the current working directory's templates/ directory.
+-- then a local checkout's templates/ directory, and finally the installed
+-- user template directory.
 local CWD = os.getenv("PWD") or "."
-local TEMPLATES_DIR = os.getenv("SOOP_TEMPLATES_DIR") or (CWD .. "/templates")
+local HOME = os.getenv("HOME") or ""
+local function directory_exists(path)
+  local probe = io.popen("test -d " .. shell_quote(path) .. " && printf yes")
+  if not probe then return false end
+  local result = probe:read("*a")
+  probe:close()
+  return result == "yes"
+end
+local local_templates = CWD .. "/templates"
+local installed_templates = HOME ~= "" and (HOME .. "/.soop/templates") or ""
+local TEMPLATES_DIR = os.getenv("SOOP_TEMPLATES_DIR")
+if not TEMPLATES_DIR then
+  if directory_exists(local_templates) then
+    TEMPLATES_DIR = local_templates
+  else
+    TEMPLATES_DIR = installed_templates ~= "" and installed_templates or local_templates
+  end
+end
 local _env_no_color = os.getenv("NO_COLOR")
 local NO_COLOR =
     _env_no_color ~= nil
@@ -19,10 +41,6 @@ local NO_COLOR =
 
 local function dry_run_message(action)
   print("[dry-run] " .. action)
-end
-
-local function shell_quote(s)
-  return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
 local function list_templates()
@@ -120,6 +138,7 @@ local collect_variables
 ---@field stop fun(self:Context, reason?:string):never
 ---@field exit fun(self:Context, code?:number, reason?:string):never
 ---@field rollback fun(self:Context, reason?:string):never
+---@field setup_mise fun(self:Context, destination:string, tools:string|string[]):boolean
 ---@field run_child fun(self:Context, manifest_path:string):void
 local ctx = {
   dry_run = false,
@@ -181,6 +200,17 @@ local ctx = {
   stop = function(self, reason) control("stop", reason, 0) end,
   exit = function(self, code, reason) control("exit", reason, code or 1) end,
   rollback = function(self, reason) control("rollback", reason, 1) end,
+
+  setup_mise = function(self, destination, tools)
+    if not self.mise_enabled then return true end
+    local requested = type(tools) == "table" and tools or { tools }
+    for _, tool in ipairs(requested) do
+      if not self:exec({ "cd", destination, "&&", "mise", "use", tool .. "@latest" }) then
+        return false
+      end
+    end
+    return true
+  end,
 
   run_child = function(self, manifest_path)
     if self.is_child or self.depth >= 1 then
@@ -422,7 +452,8 @@ local ctx = {
   is_child = false,
   depth = 0,
   parent = nil,
-  destination = nil
+  destination = nil,
+  mise_enabled = false
 }
 
 ---@class ManifestVariable
@@ -490,6 +521,8 @@ function main()
   parser
       :flag "--dry-run"
   parser
+      :flag "--mise"
+  parser
       :flag "--no-color"
 
   parser
@@ -541,6 +574,11 @@ function main()
     end
     ctx.dry_run = args.dry_run == true
     NO_COLOR = args.no_color
+    local mise_env = os.getenv("SOOP_MISE") or os.getenv("SOOP_ADD_MISE")
+    ctx.mise_enabled = args.mise == true
+      or mise_env == "1"
+      or mise_env == "true"
+      or mise_env == "yes"
 
     ctx.template_dir = TEMPLATES_DIR .. "/" .. template_name
     ctx.destination = ctx.vars.PROJECT_NAME
