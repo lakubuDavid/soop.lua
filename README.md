@@ -155,7 +155,9 @@ return M
 ```
 
 When a whole directory is scaffolded, `ctx:scaffold_dir` renders `@@NAME@@`
-tokens and `${NAME}` tokens. Prefix either form with a backslash to preserve
+tokens, `${NAME}` tokens, and filtered tokens such as
+`${{PROJECT_NAME:safe_name}}`. Supported filters are `safe_name` (replace `-`
+with `_`), `lower`, and `upper`. Prefix a token with a backslash to preserve
 it for the generated project, for example `\${DATABASE}` or `\@@NAME@@`.
 
 `ctx:prompt(message, default)` asks an optional interactive question. In dry

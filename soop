@@ -414,6 +414,7 @@ local ctx = {
   -- collected variables before being written:
   --   @@NAME@@   substituted with the value, empty string when unknown
   --   ${NAME}    substituted with the value, left literal when unknown
+  --   ${{NAME:filter}} filtered interpolation (safe_name, lower, upper)
   -- Useful for scaffolding a whole project from a static tree.
   scaffold_dir = function(self, src, dest, vars)
     local _vars = vars or self.vars
@@ -436,12 +437,26 @@ local ctx = {
       end
 
       content = content:gsub("\\(%$%{[%w_]+%})", protect)
+      content = content:gsub("\\(%${{%s*[%w_]+%s*:%s*[%w_]+%s*}})", protect)
       content = content:gsub("\\(@@[%w_]+@@)", protect)
 
       content = content:gsub("@@([%w_]+)@@", function(name)
         local val = _vars[name]
         if val ~= nil then return tostring(val) end
         return ""
+      end)
+      content = content:gsub("%${{%s*([%w_]+)%s*:%s*([%w_]+)%s*}}", function(name, filter)
+        local val = _vars[name]
+        if val == nil then return "${{" .. name .. ":" .. filter .. "}}" end
+        val = tostring(val)
+        if filter == "safe_name" then
+          return (val:gsub("-", "_"))
+        elseif filter == "lower" then
+          return val:lower()
+        elseif filter == "upper" then
+          return val:upper()
+        end
+        error("Unknown interpolation filter: " .. filter, 0)
       end)
       content = content:gsub("%$%{([%w_]+)%}", function(name)
         local val = _vars[name]
