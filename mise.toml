@@ -9,7 +9,7 @@ run = "find common.lua completion.lua soop libs templates tmp -type f -name '*.l
 
 [tasks."lint:shell"]
 description = "Run ShellCheck on the installer and test scripts"
-run = "shellcheck -S warning install.sh tests/*.sh"
+run = "shellcheck -S warning install.sh scripts/*.sh tests/*.sh"
 
 [tasks.test]
 description = "Run the project test suite"

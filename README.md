@@ -9,6 +9,19 @@ Shared interpolation behavior is implemented in `common.lua` through
 Because the scaffold is Lua, templates can copy files, render variables, and
 run project generators without requiring a separate template language.
 
+## Versioning
+
+The project version is stored in `VERSION` and is available from the launcher:
+
+```sh
+soop --version
+```
+
+The installer compares the source and installed versions. Same-version
+reinstalls require explicit confirmation and default to **No**. A different
+version prompts for an upgrade and defaults to **Yes**. Set `SOOP_YES=1` for
+non-interactive installation.
+
 ## Install
 
 `soop` only needs Lua 5.4 and its bundled `argparse` dependency. Install from
@@ -195,6 +208,7 @@ soop details <template-name> Show summary and full description
 soop d <template-name>      Alias for details
 soop completion <shell>     Generate bash, zsh, or fish completion
 soop --mise                 Enable mise tooling for the generated project
+soop --version              Show the installed version
 soop --help                 Show help
 ```
 

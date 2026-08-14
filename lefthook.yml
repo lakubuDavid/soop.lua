@@ -18,3 +18,9 @@ pre-push:
     - name: Full check
       tags: [lint, test]
       run: mise run check
+
+post-push:
+  jobs:
+    - name: Release version bump
+      tags: [release]
+      run: ./scripts/release-if-version-bumped.sh
