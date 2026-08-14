@@ -27,9 +27,10 @@ confirm() {
   fi
   printf '%b' "$prompt" >&2
   read -r answer </dev/tty || answer=
-  case "$default:$answer" in
-    y:|y:y|y:Y|y:yes|y:YES) return 0 ;;
-    n:n|n:N|n:no|n:NO|n:) return 1 ;;
+  case "$answer" in
+    y|Y|yes|YES) return 0 ;;
+    n|N|no|NO) return 1 ;;
+    '') [ "$default" = "y" ] && return 0 || return 1 ;;
     *) return 1 ;;
   esac
 }
