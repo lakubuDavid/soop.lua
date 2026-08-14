@@ -60,13 +60,21 @@ done
 [ -d "$SOURCE_DIR/libs" ] || { printf '%s\n' 'error: bundled libs directory not found' >&2; exit 1; }
 [ -d "$SOURCE_DIR/templates" ] || { printf '%s\n' 'error: templates directory not found' >&2; exit 1; }
 
+is_version() {
+  printf '%s\n' "$1" | awk -F. '$0 ~ /^[0-9]+\.[0-9]+\.[0-9]+$/ && NF == 3 { exit 0 } { exit 1 }'
+}
+
 CURRENT_VERSION=$(cat "$SOURCE_DIR/VERSION")
-case "$CURRENT_VERSION" in
-  ''|*[!0-9.]*|*.*.*.*) printf '%s\n' "error: invalid VERSION: $CURRENT_VERSION" >&2; exit 1 ;;
-esac
+if ! is_version "$CURRENT_VERSION"; then
+  printf '%s\n' "error: invalid VERSION: $CURRENT_VERSION (expected MAJOR.MINOR.PATCH)" >&2
+  exit 1
+fi
 INSTALLED_VERSION=uninstalled
 if [ -f "$BIN_DIR/VERSION" ]; then
   INSTALLED_VERSION=$(cat "$BIN_DIR/VERSION")
+  if ! is_version "$INSTALLED_VERSION"; then
+    INSTALLED_VERSION=unknown
+  fi
 fi
 
 if [ "$INSTALLED_VERSION" = "$CURRENT_VERSION" ]; then

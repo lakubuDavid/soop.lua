@@ -5,12 +5,6 @@
 local SCRIPT_DIR = arg[0]:match("^(.*/)") or "./"
 package.path = SCRIPT_DIR .. "?.lua;" .. SCRIPT_DIR .. "?/init.lua;" .. package.path
 
-local VERSION_MAJOR = ""
-local VERSION_MINOR =  ""
-local VERSION_PATCH = ""
-
-local VERSION = string.format("v%s.%s.%s",VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH)
-
 local argparse = require "libs.argparse"
 local common = require "common"
 local completion = require "completion"
