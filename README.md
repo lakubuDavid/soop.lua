@@ -19,8 +19,20 @@ soop --version
 
 The installer compares the source and installed versions. Same-version
 reinstalls require explicit confirmation and default to **No**. A different
-version prompts for an upgrade and defaults to **Yes**. Set `SOOP_YES=1` for
-non-interactive installation.
+version prompts for an upgrade and defaults to **Yes**. It also prompts to
+install shell completion for Bash, Zsh, or Fish.
+
+Installer options include:
+
+```sh
+./install.sh --force             # clean reinstall without version prompt
+./install.sh --yes               # accept install and completion prompts
+./install.sh --quiet             # suppress the banner
+./install.sh --dry-run           # show actions without cloning or writing
+./install.sh --version 0.1.2     # install a tagged release
+```
+
+Set `SOOP_YES=1` for non-interactive installation.
 
 ## Install
 
