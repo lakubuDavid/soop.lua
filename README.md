@@ -224,7 +224,16 @@ soop completion zsh > ~/.zfunc/_soop
 soop completion fish > ~/.config/fish/completions/soop.fish
 ```
 
-The generated scripts complete commands, options, and current template names.
+For direct `.zshrc` usage, source the generated script after `compinit`:
+
+```zsh
+autoload -Uz compinit && compinit
+source <(soop completion zsh)
+```
+
+The generated Zsh script also initializes `compinit` when sourced directly,
+which avoids `compdef: command not found`. The generated scripts complete
+commands, options, and current template names.
 They query the hidden machine-readable endpoint below, so completions follow
 changes to the configured template directory:
 

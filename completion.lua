@@ -33,6 +33,13 @@ function M.zsh(command)
   command = command or "soop"
   return ([=[#compdef %s
 
+# Allow this generated script to be sourced directly from .zshrc. When it is
+# installed as ~/.zfunc/_soop, compinit will already have loaded compdef.
+if (( ! $+functions[compdef] )); then
+  autoload -Uz compinit
+  compinit
+fi
+
 _%s() {
   local -a commands templates options
   commands=(
