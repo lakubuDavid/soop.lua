@@ -19,7 +19,7 @@ function M.bash(command)
     esac
 
     if [[ "$cur" == -* ]]; then
-      COMPREPLY=( $(compgen -W "--dry-run --mise --no-color --templates-dir --help" -- "$cur") )
+      COMPREPLY=( $(compgen -W "--dry-run --interactive -i --mise --no-color --templates-dir --help" -- "$cur") )
     else
       COMPREPLY=( $(compgen -W "new n list ls details d create completion" -- "$cur") )
     fi
@@ -45,7 +45,7 @@ _%s() {
     'create:Create a template'
     'completion:Generate shell completion'
   )
-  options=(--dry-run --mise --no-color --templates-dir --help)
+  options=(--dry-run --interactive -i --mise --no-color --templates-dir --help)
   templates=(${(f)"$(%s __complete templates)"})
 
   _arguments \
@@ -72,10 +72,11 @@ function M.fish(command)
   return ([=[complete -c %s -f -n '__fish_use_subcommand' -a 'new n list ls details d create completion'
 complete -c %s -f -n '__fish_seen_subcommand_from new n details d' -a '(%s __complete templates)'
 complete -c %s -l dry-run -n '__fish_use_subcommand'
+complete -c %s -l interactive -s i -n '__fish_use_subcommand'
 complete -c %s -l mise -n '__fish_use_subcommand'
 complete -c %s -l no-color -n '__fish_use_subcommand'
 complete -c %s -l templates-dir -r -n '__fish_use_subcommand'
-]=]):format(command, command, command, command, command, command, command)
+]=]):format(command, command, command, command, command, command, command, command)
 end
 
 return M

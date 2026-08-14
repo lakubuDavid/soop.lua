@@ -139,6 +139,40 @@ local function complete_template_names()
   pipe:close()
 end
 
+local function choose_template()
+  local command = "find " .. shell_quote(TEMPLATES_DIR) .. " -mindepth 1 -maxdepth 1 -type d -print 2>/dev/null | sort"
+  local pipe = io.popen(command)
+  if not pipe then error("Unable to read templates directory", 0) end
+
+  local choices = {}
+  for path in pipe:lines() do
+    local name = path:match("([^/]+)$")
+    local manifest = io.open(path .. "/manifest.lua", "r")
+    if manifest then
+      local source = manifest:read("*all")
+      manifest:close()
+      choices[#choices + 1] = {
+        name = name,
+        summary = source:match("summary%s*=%s*['\"]([^'\"]*)['\"]") or "(no summary)"
+      }
+    end
+  end
+  pipe:close()
+
+  if #choices == 0 then error("No templates found in " .. TEMPLATES_DIR, 0) end
+  print("\nAvailable templates:")
+  for index, choice in ipairs(choices) do
+    print(string.format("  %d) %-20s %s", index, choice.name, choice.summary))
+  end
+
+  while true do
+    io.write("Select a template [1-" .. #choices .. "]: ")
+    local selection = tonumber(io.read())
+    if selection and choices[selection] then return choices[selection].name end
+    print("Please select a number from 1 to " .. #choices .. ".")
+  end
+end
+
 local function template_details(template_name)
   local path = TEMPLATES_DIR .. "/" .. template_name
   local manifest_path = path .. "/manifest.lua"
@@ -574,6 +608,8 @@ function main()
   parser
       :flag "--dry-run"
   parser
+      :flag "--interactive -i"
+  parser
       :flag "--version"
   parser
       :flag "--mise"
@@ -585,6 +621,7 @@ function main()
   parser
       :command "new n"
       :argument "template-name"
+      :args "?"
   parser
       :command "create"
   parser
@@ -628,8 +665,16 @@ function main()
 
   if args.command == "new" or args.command == "n" then
     local template_name = args.template_name or args["template-name"]
+    if not template_name and args.interactive then
+      local ok, selected = pcall(choose_template)
+      if not ok then
+        log_error(tostring(selected))
+        os.exit(1)
+      end
+      template_name = selected
+    end
     if not template_name then
-      log_error("template-name is required")
+      log_error("template-name is required (use --interactive to choose one)")
       os.exit(1)
     end
 

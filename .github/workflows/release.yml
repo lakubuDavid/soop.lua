@@ -1,0 +1,51 @@
+name: Release VERSION bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.event.before != '0000000000000000000000000000000000000000'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Read and compare VERSION
+        id: version
+        shell: bash
+        run: |
+          current=$(cat VERSION)
+          previous=$(git show HEAD^:VERSION 2>/dev/null || true)
+          case "$current" in
+            ''|*[!0-9.]*|*.*.*.*) echo "Invalid VERSION: $current" >&2; exit 1 ;;
+          esac
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          if [ "$current" = "$previous" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub release
+        if: steps.version.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.current }}"
+          previous="${{ steps.version.outputs.previous }}"
+          tag="v${version}"
+          echo "Version bump: ${previous:-unreleased} -> $version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists: $tag"
+          else
+            gh release create "$tag" --target "$GITHUB_SHA" --generate-notes --title "$tag"
+          fi

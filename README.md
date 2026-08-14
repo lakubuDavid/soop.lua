@@ -202,6 +202,7 @@ Available context methods:
 ```text
 soop new <template-name>    Scaffold a project
 soop n <template-name>      Alias for new
+soop n -i                    Choose a template interactively, then name the project
 soop list                   List template names and short summaries
 soop ls                     Alias for list
 soop details <template-name> Show summary and full description
@@ -209,6 +210,7 @@ soop d <template-name>      Alias for details
 soop completion <shell>     Generate bash, zsh, or fish completion
 soop --mise                 Enable mise tooling for the generated project
 soop --version              Show the installed version
+soop --interactive, -i      Choose a template interactively
 soop --help                 Show help
 ```
 
