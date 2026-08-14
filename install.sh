@@ -35,13 +35,24 @@ confirm() {
   esac
 }
 
-printf '%b\n' "${CYAN}========================================${RESET}"
-printf '%b\n' "${CYAN}             soop installer${RESET}"
-printf '%b\n' "${CYAN}========================================${RESET}"
-printf '%b\n' "${GREEN}soop scaffolds projects from Lua manifests.${RESET}"
-printf '%s\n' 'It includes templates, dry-run support, mise tooling, and shell completion.'
+printf '%b\n' "${CYAN}      ___           ___           ___           ___${RESET}"
+printf '%b\n' "${GREEN}     /  /\\         /  /\\         /  /\\         /  /\\${RESET}"
+printf '%b\n' "${LAVENDER}    /  /:/_       /  /::\\       /  /::\\       /  /::\\${RESET}"
+printf '%b\n' "${CYAN}   /  /:/ /\\     /  /:/\\:\\     /  /:/\\:\\     /  /:/\\:\\${RESET}"
+printf '%b\n' "${GREEN}  /  /:/ /::\\   /  /:/  \\:\\   /  /:/  \\:\\   /  /:/~/:/${RESET}"
+printf '%b\n' "${LAVENDER} /__/:/ /:/\\:\\ /__/:/ \\__\\:\\ /__/:/ \\__\\:\\ /__/:/ /:/${RESET}"
+printf '%b\n' "${CYAN} \\  \\:\\/:/~/:/ \\  \\:\\ /  /:/ \\  \\:\\ /  /:/ \\  \\:\\/:/${RESET}"
+printf '%b\n' "${GREEN}  \\  \\::/ /:/   \\  \\:\\  /:/   \\  \\:\\  /:/   \\  \\::/${RESET}"
+printf '%b\n' "${LAVENDER}   \\__\\\\/ /:/     \\  \\:\\/:/     \\  \\:\\/:/     \\  \\:\\${RESET}"
+printf '%b\n' "${CYAN}     /__/:/       \\  \\::/       \\  \\::/       \\  \\:\\${RESET}"
+printf '%b\n' "${GREEN}     \\__\\/         \\__\\/         \\__\\/         \\__\\/${RESET}"
+printf '%b\n' "${GREEN}soop scaffolds projects from Lua manifests, templates, and mise tooling.${RESET}"
+printf '%b\n' "${LAVENDER}It supports dry runs, interactive template selection, and shell completion.${RESET}"
+printf '%s\n' ''
+printf '%s\n' ''
 printf '%b\n' "${LAVENDER}Target launcher:${RESET} $BIN_DIR/soop"
 printf '%b\n' "${LAVENDER}Target templates:${RESET} $TEMPLATE_DIR"
+printf '%s\n' ''
 confirm "${YELLOW}Continue with installation? [y/N] ${RESET}" n || { printf '%s\n' 'Installation cancelled.'; exit 0; }
 
 # A curl-piped script has no usable checkout beside it. Clone a temporary copy
